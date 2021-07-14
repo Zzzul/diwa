@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\RankingController;
-use App\Http\Controllers\ScrapperController;
+use App\Http\Controllers\API\HomeController;
+use App\Http\Controllers\API\NewsController;
+use App\Http\Controllers\API\RankingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

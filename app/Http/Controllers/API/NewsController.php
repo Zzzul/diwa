@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use Goutte\Client;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -9,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class NewsController extends Controller
 {
-
     private $results = [];
 
     /**
@@ -64,6 +64,6 @@ class NewsController extends Controller
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'news' => $this->results
-        ]);
+        ], Response::HTTP_OK);
     }
 }
