@@ -41,7 +41,7 @@ class Handler extends ExceptionHandler
                 'message' => 'Endpoint not found.',
                 'status_code' => Response::HTTP_NOT_FOUND,
                 'home' => route("home")
-            ]);
+            ], Response::HTTP_NOT_FOUND);
         });
     }
 }
