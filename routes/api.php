@@ -21,4 +21,6 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/rankings', RankingController::class)->name('rankings');
 
-Route::get('/news', NewsController::class)->name('news');
+Route::get('/news', [NewsController::class, 'index'])->name('news');
+
+Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.show');

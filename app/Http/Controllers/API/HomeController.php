@@ -19,16 +19,23 @@ class HomeController extends Controller
         return response()->json([
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
+            'distrowatch' => env('DISTROWATCH_URL'),
             'endpoints' => [
                 'rankings' => route("rankings"),
-                'news' => route("news"),
-                'per_news' => [
-                    'url' => env('DISTROWATCH_URL') . '{news_id}',
-                    'example' => env('DISTROWATCH_URL') . 11300
+                'all_news' => route("news"),
+                'news_detail' => [
+                    'distribution_news' => [
+                        'url' => route("news") . '/{news_id}',
+                        'example' => route("news.show", 11300),
+                    ],
+                    'weekly_news' => [
+                        'url' => 'Coming soon',
+                        'example' => 'Coming soon',
+                    ]
                 ],
-                'per_distribution' => [
-                    'url' => env('DISTROWATCH_URL') . '{distribution}',
-                    'example' => env('DISTROWATCH_URL') . 'mx'
+                'distribution_detail' => [
+                    'url' => 'Coming soon',
+                    'example' => 'Coming soon',
                 ],
             ],
             'author' => 'Mohammad Zulfahmi',
