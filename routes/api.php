@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\DistributionController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\NewsController;
 use App\Http\Controllers\API\RankingController;
@@ -24,3 +25,5 @@ Route::get('/rankings', RankingController::class)->name('rankings');
 Route::get('/news', [NewsController::class, 'index'])->name('news');
 
 Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.show');
+
+Route::get('/distribution/{name}', [DistributionController::class, 'show'])->name('distribution.show');

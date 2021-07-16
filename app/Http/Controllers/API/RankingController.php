@@ -10,7 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RankingController extends Controller
 {
-    private $results = [];
+    private $rankings = [];
+
     /**
      * Handle the incoming request.
      *
@@ -21,36 +22,36 @@ class RankingController extends Controller
     {
         $client = new Client();
 
-        $url = env('DISTROWATCH_URL', 'https://distrowatch.com/');
+        $url = env('DISTROWATCH_URL');
 
-        $page = $client->request('GET', $url);
+        $crawler = $client->request('GET', $url);
 
-        $page->filter('.phr2')->each(function ($node, $i) use ($url) {
-            $rankings = [
+        $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+            $this->rankings[] = [
                 'no' => $i + 1,
                 'distribution' => $node->filter('a')->text(),
-                'url' => $node->filter('a')->link()->getUri(),
-                'hits_per_day_count' => intval($node->nextAll()->text()),
+                'distrowatch_distribution_url' => $node->filter('a')->link()->getUri(),
+                'distribution_url' => 'Coming soon',
+                // hits per day
+                'hpd' => [
+                    'count' => intval($node->nextAll()->text()),
+                    'status' => ($node->nextAll()->filter('img')->attr('alt') == '<')
+                        ? 'adown' : (($node->nextAll()->filter('img')->attr('alt') == '>')
+                            ? 'aup' : 'alevel'),
 
+                    'alt' => $node->nextAll()->filter('img')->attr('alt'),
+
+                    'image' => $url . $node->nextAll()->filter('img')->attr('src'),
+                ],
                 'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),
-
-                'hpd' => ($node->nextAll()->filter('img')->attr('alt') == '<')
-                    ? 'adown' : (($node->nextAll()->filter('img')->attr('alt') == '>')
-                        ? 'aup' : 'alevel'),
-
-                'hpd_alt' => $node->nextAll()->filter('img')->attr('alt'),
-
-                'hpd_image' => $url . $node->nextAll()->filter('img')->attr('src'),
             ];
-
-            array_push($this->results, $rankings);
         });
 
         return response()->json([
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'hpd' => 'Hits Per Day',
-            'rankings' => $this->results
+            'rankings' => $this->rankings
         ]);
     }
 }
