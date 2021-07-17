@@ -52,8 +52,8 @@ class DistributionController extends Controller
                 $this->all_distribution[] = [
                     'slug' => $node->attr('value'),
                     'name' => $node->text(),
-                    'detail' => route("distribution.show", $node->attr('value')),
-                    'distrowatch_detail_url' => env('DISTROWATCH_URL') . $node->attr('value'),
+                    'distrowatch_distribution_detail_url' => env('DISTROWATCH_URL') . $node->attr('value'),
+                    'distribution_detail_url' => route("distribution.show", $node->attr('value')),
                 ];
             }
         });

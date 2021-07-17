@@ -28,16 +28,16 @@ class HomeController extends Controller
                         'url' => url('/api/distribution/{name}'),
                         'example' => route("distribution.show", 'mx'),
                     ],
-                    'rankings' => [
+                    'ranking' => [
                         'default' => [
-                            'url' => route("rankings"),
+                            'url' => route("ranking.index"),
                             'note' => 'top 100 rankings of last 6 months'
                         ],
                         'custom' => [
-                            'url' => 'coming soon',
-                            'example' => 'coming soon',
-                            'params' => 'coming soon',
-                            'note' => 'coming soon',
+                            'url' => url('/api/ranking/{slug}'),
+                            'example' => route("ranking.show", 'trending-1'),
+                            'list_params' => route("params.ranking"),
+                            'note' => 'if {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
                         ]
                     ],
                 ],
@@ -50,7 +50,7 @@ class HomeController extends Controller
                         'custom' => [
                             'url' => 'coming soon',
                             'example' => 'coming soon',
-                            'params' => 'coming soon',
+                            'list_params' => 'coming soon',
                             'note' => 'coming soon',
                         ],
                     ],
