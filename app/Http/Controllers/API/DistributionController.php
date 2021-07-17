@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DistributionController extends Controller
 {
+    private $all_distribution = [];
     private $based_on = [];
     private $architecture = [];
     private $category = [];
@@ -25,7 +26,7 @@ class DistributionController extends Controller
     private $average_rating = [];
 
     private $distribution = '';
-    private $description = '';
+    private $about = '';
     private $last_update = '';
     private $origin = '';
     private $status = '';
@@ -35,20 +36,52 @@ class DistributionController extends Controller
     private $alternative_user_forum = '';
     private $os_type = '';
     private $bug_tracker = '';
+    private $mailing_list = '';
 
 
-
-    public function show($name)
+    public function index()
     {
         $client = new Client();
 
-        $url = env('DISTROWATCH_URL') . "table.php?distribution=$name";
+        $url = env('DISTROWATCH_URL');
+
+        $crawler = $client->request('GET', $url);
+
+        $crawler->filter('select')->children()->each(function ($node, $i) {
+            if ($i > 0) {
+                $this->all_distribution[] = [
+                    'slug' => $node->attr('value'),
+                    'name' => $node->text(),
+                    'detail' => route("distribution.show", $node->attr('value')),
+                    'distrowatch_detail_url' => env('DISTROWATCH_URL') . $node->attr('value'),
+                ];
+            }
+        });
+
+        return response()->json([
+            'message' => 'Success.',
+            'status_code' => Response::HTTP_OK,
+            'all_distribution' => $this->all_distribution
+        ], Response::HTTP_OK);
+    }
+
+    public function show($slug)
+    {
+        $client = new Client();
+
+        $url = env('DISTROWATCH_URL') . "table.php?distribution=$slug";
 
         $crawler = $client->request('GET', $url);
 
         $node = $crawler->filter('h1')->eq(0);
-        // dd($node);
-        abort_if(count($node) == 0, 404, 'jaja awok');
+
+        if (count($node) == 0) {
+            return response()->json([
+                'message' => 'distribution not found.',
+                'status_code' => Response::HTTP_NOT_FOUND,
+                'home' => route("home")
+            ], Response::HTTP_NOT_FOUND);
+        }
 
         $this->distribution = $node->text();
         $this->last_update = Str::remove('Last Update: ', $node->nextAll()->text());
@@ -85,14 +118,17 @@ class DistributionController extends Controller
         // popularity
         $this->popularity = Str::remove('Popularity: ', $crawler->filter('ul')->eq(1)->filter('li')->eq(7)->text());
 
-        // description (soon)
+        // about (soon)
         $remove_ul_text = Str::remove($crawler->filter('.TablesTitle')->filter('ul')->text(), $crawler->filter('.TablesTitle')->text());
 
-        $this->description = Str::before($remove_ul_text, ' Popularity (hits per day)');
+        $this->about = Str::before($remove_ul_text, ' Popularity (hits per day)');
 
         // summary
         // homepage of distribution url
         $this->homepage = $crawler->filter('.Background')->eq(1)->filter('a')->link()->getUri();
+
+        $this->mailing_list = Str::remove('Mailing Lists  ', $crawler->filter('.Background')->eq(2)->text());
+        Str::contains($this->mailing_list, '--') ? $this->mailing_list = '' : $this->mailing_list = $this->mailing_list;
 
         // distribution user forum url
         $this->user_forum = count($crawler->filter('.Background')->eq(3)->filter('a')) != 0 ? $crawler->filter('.Background')->eq(3)->filter('a')->link()->getUri() : '';
@@ -116,6 +152,7 @@ class DistributionController extends Controller
         });
 
         $this->bug_tracker = Str::remove('Bug Tracker ', $crawler->filter('.Background')->eq(9)->text());
+        Str::contains($this->bug_tracker, '--') ? $this->bug_tracker = '' : $this->bug_tracker = $this->bug_tracker;
 
         $crawler->filter('.Background')->eq(10)->filter('a')->each(function ($node) {
             $this->related_websites[] = $node->link()->getUri();
@@ -133,7 +170,6 @@ class DistributionController extends Controller
             $this->where_to_buy_or_try['text'] = '';
         }
 
-
         $crawler->filter('.Background')->eq(13)->filter('a')->each(function ($node) {
             $this->recent_related_news_and_releases[] =  [
                 'text' => $node->text(),
@@ -143,22 +179,22 @@ class DistributionController extends Controller
 
         $this->average_rating = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html() . ' from ' . $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->nextAll()->html() . ' reviews';
 
-
         return response()->json([
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'distribution' => $this->distribution,
             'last_update' => $this->last_update,
-            'description' => $this->description,
             'os_type' => $this->os_type,
-            'based_on' => $this->based_on,
             'origin' => $this->origin,
+            'about' => $this->about,
+            'based_on' => $this->based_on,
             'architecture' => $this->architecture,
             'desktop' => $this->desktop,
             'category' => $this->category,
             'status' => $this->status,
             'popularity' => $this->popularity,
             'homepage' => $this->homepage,
+            'mailing_list' => $this->mailing_list,
             'user_forum' => $this->user_forum,
             'alternative_user_forum' => $this->alternative_user_forum,
             'documentation' => $this->documentation,

@@ -14,7 +14,7 @@ class HomeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function __invoke(Request $request)
+    public function __invoke()
     {
         return response()->json([
             'message' => 'Success',
@@ -23,6 +23,11 @@ class HomeController extends Controller
             'docs' => 'coming soon',
             'endpoints' => [
                 'distribution' => [
+                    'all' => route("distribution.index"),
+                    'detail' => [
+                        'url' => url('/api/distribution/{name}'),
+                        'example' => route("distribution.show", 'mx'),
+                    ],
                     'rankings' => [
                         'default' => [
                             'url' => route("rankings"),
@@ -35,10 +40,6 @@ class HomeController extends Controller
                             'note' => 'coming soon',
                         ]
                     ],
-                    'detail' => [
-                        'url' => url('/api/distribution/{name}'),
-                        'example' => route("distribution.show", 'mx'),
-                    ]
                 ],
                 'news' => [
                     'simple' => [

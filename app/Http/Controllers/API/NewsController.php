@@ -13,13 +13,14 @@ class NewsController extends Controller
     private $body = [];
     private $recent_related_news_and_releases = [];
     private $distribution_summary = [];
-    private $about_distribution = '';
+    private $about = '';
     private $screenshots = '';
     private $distrowatch_url_news = '';
     private $headline = '';
     private $thumbnail = '';
     private $date = '';
-    private $distribution_url = '';
+    private $distribution_detail_url = '';
+    private $news_detail_url = '';
 
     public function index()
     {
@@ -50,6 +51,16 @@ class NewsController extends Controller
                     $sponsor = true;
                 }
 
+                if (Str::contains($headline, 'DistroWatch Weekly') || Str::contains($headline, 'Featured Distribution')) {
+                    $this->news_detail_url = '';
+                    $this->distribution_detail_url = '';
+                } else {
+                    $this->news_detail_url = route("news.show", $news_detail_url);
+
+                    $href = $node->children()->filter('.NewsLogo')->filter('a')->attr('href');
+                    $this->distribution_detail_url =  route("distribution.show", $href);
+                };
+
                 $this->news[] = [
                     'headline' => Str::remove('NEW • ', $headline),
                     'date' => $node->children()->filter('td')->text(),
@@ -57,10 +68,10 @@ class NewsController extends Controller
                     'thumbnail' => env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src'),
 
                     'distrowatch_news_url' => $distrowatch_news_url,
-                    'distrowatch_distribution_url' => $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri(),
+                    'distrowatch_distribution_detail_url' => $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri(),
 
-                    'news_detail_url' => route("news.show", $news_detail_url),
-                    'distribution_url' => 'Coming soon',
+                    'news_detail_url' =>  $this->news_detail_url,
+                    'distribution_detail_url' => $this->distribution_detail_url,
 
                     'body' => $node->children()->filter('.NewsText')->text(),
                     'sponsor' => $sponsor
@@ -96,7 +107,7 @@ class NewsController extends Controller
 
             $this->thumbnail = env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src');
 
-            $this->distrowatch_distribution_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
+            $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
 
             $this->body = [
                 'text' => $node->children()->filter('.NewsText')->text(),
@@ -114,9 +125,9 @@ class NewsController extends Controller
             });
         });
 
-        // about_distribution
+        // about
         $crawler->filter('.Background > td')->eq(1)->each(function ($node) {
-            $this->about_distribution = $node->text();
+            $this->about = $node->text();
         });
 
         // distribution_summary
@@ -133,22 +144,22 @@ class NewsController extends Controller
             $this->screenshots = env('DISTROWATCH_URL') . $node->filter('img')->attr('src');
         });
 
-        $this->distribution_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_url));
+        $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
 
         return response()->json([
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'distrowatch_news_url' => $this->distrowatch_url_news,
-            'distrowatch_distribution_url' => $this->distrowatch_distribution_url,
-            'distribution_url' => $this->distribution_url,
+            'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
+            'distribution_detail_url' => $this->distribution_detail_url,
             'news_detail' => [
                 'headline' => $this->headline,
                 'date' => $this->date,
                 'thumbnail' => $this->thumbnail,
+                'about' => $this->about,
                 'body' => $this->body,
-                'about_distribution' => $this->about_distribution,
                 'recent_related_news_and_releases' => $this->recent_related_news_and_releases,
-                'distribution_summary' => $this->distribution_summary,
+                'summary' => $this->distribution_summary,
                 'screenshots' => $this->screenshots
             ]
         ], Response::HTTP_OK);

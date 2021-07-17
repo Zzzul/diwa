@@ -26,4 +26,5 @@ Route::get('/news', [NewsController::class, 'index'])->name('news');
 
 Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.show');
 
-Route::get('/distribution/{name}', [DistributionController::class, 'show'])->name('distribution.show');
+Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
+Route::get('/distribution/{slug}', [DistributionController::class, 'show'])->name('distribution.show');

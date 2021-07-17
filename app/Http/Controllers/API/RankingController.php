@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 class RankingController extends Controller
 {
     private $rankings = [];
+    private $distrowatch_distribution_url = '';
+    private $distribution_url = '';
 
     /**
      * Handle the incoming request.
@@ -27,11 +29,16 @@ class RankingController extends Controller
         $crawler = $client->request('GET', $url);
 
         $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+
+            $this->distrowatch_distribution_url =  $node->filter('a')->link()->getUri();
+
+            $this->distribution_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_url));
+
             $this->rankings[] = [
                 'no' => $i + 1,
                 'distribution' => $node->filter('a')->text(),
-                'distrowatch_distribution_url' => $node->filter('a')->link()->getUri(),
-                'distribution_url' => 'Coming soon',
+                'distrowatch_distribution_url' => $this->distrowatch_distribution_url,
+                'distribution_url' => $this->distribution_url,
                 // hits per day
                 'hpd' => [
                     'count' => intval($node->nextAll()->text()),
