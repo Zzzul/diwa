@@ -124,7 +124,7 @@ class DistributionController extends Controller
         // fix about
         $remove_popularity_text = Str::before($remove_ul_text, ' Popularity (hits per day)');
 
-        $this->about = Str::after($remove_popularity_text, '  UTC ');
+        $this->about = Str::after($remove_popularity_text, ' UTC  ');
 
         // summary
         // homepage of distribution url

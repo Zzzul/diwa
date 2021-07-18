@@ -90,7 +90,7 @@ class RankingController extends Controller
 
             $hpd = $node->nextAll()->filter('img');
             if (count($hpd) > 0) {
-                $this->alt =  $hpd->attr('alt');
+                $this->alt = $hpd->attr('alt');
                 $this->status = ($this->alt == '<')
                     ? 'adown' : (($this->alt == '>')
                         ? 'aup' : 'alevel');
@@ -108,7 +108,7 @@ class RankingController extends Controller
                 'hpd' => [
                     'count' => intval($node->nextAll()->text()),
                     'status' => $this->status,
-                    'alt' => $this->alt,
+                    'alt' => $this->alt == null ? '' : $this->alt,
                     'image' => $this->image,
                 ],
                 'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),

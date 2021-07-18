@@ -31,52 +31,7 @@ class NewsController extends Controller
         $crawler = $client->request('GET', $url);
 
         $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
-            $sponsor = false;
-
-            if ($i >= 1) {
-                if ($i < 13) {
-                    $headline = $node->children()->filter('td')->nextAll()->text();
-
-                    $distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->link()->getUri();
-
-                    $news_detail_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
-                } else {
-                    // sponsor news
-                    $distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->link()->getUri();
-
-                    $news_detail_url = $node->children()->filter('td')->nextAll()->filter('a')->attr('href');
-
-                    $headline = $node->children()->filter('td')->nextAll()->filter('a')->text();
-
-                    $sponsor = true;
-                }
-
-                if (Str::contains($headline, 'DistroWatch Weekly') || Str::contains($headline, 'Featured Distribution')) {
-                    $this->news_detail_url = '';
-                    $this->distribution_detail_url = '';
-                } else {
-                    $this->news_detail_url = route("news.show", $news_detail_url);
-
-                    $href = $node->children()->filter('.NewsLogo')->filter('a')->attr('href');
-                    $this->distribution_detail_url =  route("distribution.show", $href);
-                };
-
-                $this->news[] = [
-                    'headline' => Str::remove('NEW • ', $headline),
-                    'date' => $node->children()->filter('td')->text(),
-
-                    'thumbnail' => env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src'),
-
-                    'distrowatch_news_url' => $distrowatch_news_url,
-                    'distrowatch_distribution_detail_url' => $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri(),
-
-                    'news_detail_url' =>  $this->news_detail_url,
-                    'distribution_detail_url' => $this->distribution_detail_url,
-
-                    'body' => $node->children()->filter('.NewsText')->text(),
-                    'sponsor' => $sponsor
-                ];
-            }
+            $this->getNewsData($node, $i);
         });
 
         return response()->json([
@@ -163,5 +118,76 @@ class NewsController extends Controller
                 'screenshots' => $this->screenshots
             ]
         ], Response::HTTP_OK);
+    }
+
+    public function filteringNews(
+        $distribution = 'all',
+        $release = 'all',
+        $month = 'all',
+        $year = 'all'
+    ) {
+        $client = new Client();
+
+        $url = env('DISTROWATCH_URL') . "?distribution=$distribution&release=$release&month=$month&year=$year";
+
+        $crawler = $client->request('GET', $url);
+
+        $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
+            $this->getNewsData($node, $i);
+        });
+
+        return response()->json([
+            'message' => 'Success',
+            'status_code' => Response::HTTP_OK,
+            'news' => $this->news
+        ], Response::HTTP_OK);
+    }
+
+    public function getNewsData($node, $i)
+    {
+        $sponsor = false;
+
+        if ($i >= 1) {
+            $headline = $node->children()->filter('td')->nextAll()->text();
+
+            if (count($node->children()->filter('td')->nextAll()->filter('a')->nextAll()) > 0) {
+                $distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->link()->getUri();
+            } else {
+                $distrowatch_news_url =  $node->children()->filter('td')->nextAll()->filter('a')->link()->getUri();
+            }
+
+            if (count($node->children()->filter('td')->nextAll()->filter('a')->nextAll()) > 0) {
+                $news_detail_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
+            } else {
+                $news_detail_url = $node->children()->filter('td')->nextAll()->filter('a')->attr('href');
+                $sponsor = true;
+            }
+
+            if (Str::contains($headline, 'DistroWatch Weekly') || Str::contains($headline, 'Featured Distribution')) {
+                $this->news_detail_url = '';
+                $this->distribution_detail_url = '';
+            } else {
+                $this->news_detail_url = $news_detail_url == null ? '' : route("news.show", $news_detail_url);
+
+                $href = $node->children()->filter('.NewsLogo')->filter('a')->attr('href');
+                $this->distribution_detail_url =  route("distribution.show", $href);
+            };
+
+            $this->news[] = [
+                'headline' => Str::remove('NEW • ', $headline),
+                'date' => $node->children()->filter('td')->text(),
+
+                'thumbnail' => env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src'),
+
+                'distrowatch_news_url' => $distrowatch_news_url,
+                'distrowatch_distribution_detail_url' => $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri(),
+
+                'news_detail_url' =>  $this->news_detail_url,
+                'distribution_detail_url' => $this->distribution_detail_url,
+
+                'body' => $node->children()->filter('.NewsText')->text(),
+                'sponsor' => $sponsor
+            ];
+        }
     }
 }

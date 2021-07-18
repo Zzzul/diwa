@@ -21,14 +21,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
-Route::get('/params/ranking', [ParamsController::class, 'rankingParams'])->name('params.ranking');
-Route::get('/params/news', [ParamsController::class, 'newsParams'])->name('params.news');
+Route::prefix('params')->group(function () {
+    Route::get('/ranking', [ParamsController::class, 'rankingParams'])->name('params.ranking');
+    Route::get('/news', [ParamsController::class, 'newsParams'])->name('params.news');
+});
 
-Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
-Route::get('/ranking/{slug}', [RankingController::class, 'show'])->name('ranking.show');
+Route::get('/news/filter/distribution={distribution}&release={release}&month={month}&year={year}', [NewsController::class, 'filteringNews'])->name('news.filteringNews');
 
-Route::get('/news', [NewsController::class, 'index'])->name('news');
-Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.show');
+Route::resource('/news', NewsController::class)->only('index', 'show');
 
-Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
-Route::get('/distribution/{slug}', [DistributionController::class, 'show'])->name('distribution.show');
+Route::resource('/ranking', RankingController::class)->only('index', 'show');
+
+Route::resource('/distribution', DistributionController::class)->only('index', 'show');

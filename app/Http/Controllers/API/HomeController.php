@@ -34,7 +34,7 @@ class HomeController extends Controller
                             'note' => 'top 100 rankings of last 6 months'
                         ],
                         'custom' => [
-                            'url' => url('/api/ranking/{slug}'),
+                            'url' => route("news.index") . '/{slug}',
                             'example' => route("ranking.show", 'trending-1'),
                             'list_params' => route("params.ranking"),
                             'note' => 'if {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
@@ -44,20 +44,20 @@ class HomeController extends Controller
                 'news' => [
                     'simple' => [
                         'default' => [
-                            'url' => route("news"),
+                            'url' => route("news.index"),
                             'note' => 'latest 12 news and 1 sponsor news'
                         ],
                         'custom' => [
-                            'url' => 'coming soon',
-                            'example' => 'coming soon',
+                            'url' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'August', 'year' => 2021]),
+                            'example' => route("news.index") . '/filter/distribution={distribution}&release={release}&month={month}&year={year}',
                             'list_params' => route("params.news"),
-                            'note' => 'if {params} not found, distrowatch.com will return the home page with default params(all). make sure {params} is correct',
+                            'note' => 'if one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct',
                         ],
                     ],
                     'detail' => [
                         'type' => [
                             'distribution_news' => [
-                                'url' => route("news") . '/{news_id}',
+                                'url' => route("news.index") . '/{news_id}',
                                 'example' => route("news.show", 11300),
                                 'note' => 'if {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct'
                             ],
