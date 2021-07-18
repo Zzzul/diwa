@@ -50,8 +50,8 @@ class HomeController extends Controller
                         'custom' => [
                             'url' => 'coming soon',
                             'example' => 'coming soon',
-                            'list_params' => 'coming soon',
-                            'note' => 'coming soon',
+                            'list_params' => route("params.news"),
+                            'note' => 'if {params} not found, distrowatch.com will return the home page with default params(all). make sure {params} is correct',
                         ],
                     ],
                     'detail' => [

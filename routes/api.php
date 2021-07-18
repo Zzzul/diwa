@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/params/ranking', [ParamsController::class, 'rankingParams'])->name('params.ranking');
+Route::get('/params/news', [ParamsController::class, 'newsParams'])->name('params.news');
 
 Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
 Route::get('/ranking/{slug}', [RankingController::class, 'show'])->name('ranking.show');
