@@ -121,7 +121,10 @@ class DistributionController extends Controller
         // about (soon)
         $remove_ul_text = Str::remove($crawler->filter('.TablesTitle')->filter('ul')->text(), $crawler->filter('.TablesTitle')->text());
 
-        $this->about = Str::before($remove_ul_text, ' Popularity (hits per day)');
+        // fix about
+        $remove_popularity_text = Str::before($remove_ul_text, ' Popularity (hits per day)');
+
+        $this->about = Str::after($remove_popularity_text, '  UTC ');
 
         // summary
         // homepage of distribution url
