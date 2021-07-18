@@ -1,12 +1,7 @@
 <?php
 
-use App\Http\Controllers\API\DistributionController;
-use App\Http\Controllers\API\HomeController;
-use App\Http\Controllers\API\NewsController;
-use App\Http\Controllers\API\ParamsController;
-use App\Http\Controllers\API\RankingController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\{HomeController, ParamsController, RankingController, WeeklyNewsController, DistributionController, DistributionNewsController};
 
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +21,11 @@ Route::prefix('params')->group(function () {
     Route::get('/news', [ParamsController::class, 'newsParams'])->name('params.news');
 });
 
-Route::get('/news/filter/distribution={distribution}&release={release}&month={month}&year={year}', [NewsController::class, 'filteringNews'])->name('news.filteringNews');
+Route::get('/news/filter/distribution={distribution}&release={release}&month={month}&year={year}', [DistributionNewsController::class, 'filteringNews'])->name('news.filteringNews');
 
-Route::resource('/news', NewsController::class)->only('index', 'show');
+Route::resource('/news', DistributionNewsController::class)->only('index', 'show');
+
+Route::resource('/weekly', WeeklyNewsController::class)->only('index', 'show');
 
 Route::resource('/ranking', RankingController::class)->only('index', 'show');
 

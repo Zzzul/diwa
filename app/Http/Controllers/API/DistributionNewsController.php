@@ -7,7 +7,7 @@ use Goutte\Client;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
-class NewsController extends Controller
+class DistributionNewsController extends Controller
 {
     private $news = [];
     private $body = [];
