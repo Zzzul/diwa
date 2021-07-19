@@ -48,9 +48,12 @@ class HomeController extends Controller
                                 'note' => 'latest 12 news and 1 sponsor news'
                             ],
                             'custom' => [
-                                'url' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'August', 'year' => 2021]),
-                                'example' => route("news.index") . '/filter/distribution={distribution}&release={release}&month={month}&year={year}',
+                                'url' => route("news.index") . '/filter/distribution={distribution}&release={release}&month={month}&year={year}',
+
+                                'example' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'August', 'year' => 2021]),
+
                                 'list_params' => route("params.news"),
+
                                 'note' => 'if one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct',
                             ],
                         ],
@@ -61,11 +64,15 @@ class HomeController extends Controller
                         ],
                     ],
                     'weekly_news' => [
-                        'all' => ['url' => 'coming soon'],
+                        'all' => [
+                            'url' => route("weekly.index"),
+                            'note' => 'warning: big size response'
+                        ],
                         'detail' => [
-                            'url' => 'coming soon',
-                            'example' => 'coming soon',
-                        ]
+                            'url' => route("weekly.index") . '/{weekly_id}',
+                            'example' => route("weekly.show", 20210719),
+                            'note' => 'if {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct'
+                        ],
                     ],
                 ],
             ],
