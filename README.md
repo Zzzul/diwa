@@ -4,7 +4,7 @@
 </div>
 
 
-#Demo 
+# Demo 
 [Click Here!](http://diwa.herokuapp.com/api)
 
 
@@ -19,12 +19,12 @@ For the tech stack, Diwa was using :
 - [Laravel-goutte](https://github.com/dweidner/laravel-goutte)
 
 
-# List routes Diwa API
+# Routes lists
 For now, Diwa has a more than 10 routes to get the current data of distribution, ranking, news, etc.
 
 | Name API | Description | Route  | Note
 | -------- | ----------- | ------ | ----|
-| Index | Get all list and info about this API | /  |-
+| Index | Get all endpoints and info about this API | /  |-
 | All Distribution | Get all Distribution | /api/distribution | -
 | Distribution Detail | Get distribution information detail | /api/distribution/{name} <br><br> example: /api/distribution/mx | If {name} not found, will return 404
 | Ranking(Default) | Get top 100 distribution ranking of last 6 months | /api/ranking |-
