@@ -23,10 +23,10 @@ Route::prefix('params')->group(function () {
 
 Route::get('/news/filter/distribution={distribution}&release={release}&month={month}&year={year}', [DistributionNewsController::class, 'filteringNews'])->name('news.filteringNews');
 
-Route::resource('/news', DistributionNewsController::class)->only('index', 'show');
+Route::apiResource('/news', DistributionNewsController::class)->only('index', 'show');
 
-Route::resource('/weekly', WeeklyNewsController::class)->only('index', 'show');
+Route::apiResource('/weekly', WeeklyNewsController::class)->only('index', 'show');
 
-Route::resource('/ranking', RankingController::class)->only('index', 'show');
+Route::apiResource('/ranking', RankingController::class)->only('index', 'show');
 
-Route::resource('/distribution', DistributionController::class)->only('index', 'show');
+Route::apiResource('/distribution', DistributionController::class)->only('index', 'show');

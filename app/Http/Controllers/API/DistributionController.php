@@ -173,6 +173,7 @@ class DistributionController extends Controller
             $this->where_to_buy_or_try['text'] = '';
         }
 
+        // bug: manjaro dont show recent_related_news_and_releases
         $crawler->filter('.Background')->eq(13)->filter('a')->each(function ($node) {
             $this->recent_related_news_and_releases[] =  [
                 'text' => $node->text(),
@@ -180,7 +181,15 @@ class DistributionController extends Controller
             ];
         });
 
-        $this->average_rating = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html() . ' from ' . $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->nextAll()->html() . ' reviews';
+        if (count($crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
+            $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html();
+        } else {
+            $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->html();
+        }
+
+        $this->average_rating = $skor . ' from ' . $crawler->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews';
+
+        // dd($this->average_rating);
 
         return response()->json([
             'message' => 'Success',
