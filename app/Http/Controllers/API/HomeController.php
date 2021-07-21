@@ -19,7 +19,7 @@ class HomeController extends Controller
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'source' => env('DISTROWATCH_URL'),
-            'docs' => 'coming soon',
+            'docs' => 'Coming soon',
             'endpoints' => [
                 'distribution' => [
                     'all' => route("distribution.index"),
@@ -30,13 +30,13 @@ class HomeController extends Controller
                     'ranking' => [
                         'default' => [
                             'url' => route("ranking.index"),
-                            'note' => 'top 100 rankings of last 6 months'
+                            'note' => 'Top 100 rankings of last 6 months'
                         ],
                         'custom' => [
-                            'url' => route("news.index") . '/{slug}',
+                            'url' => route("ranking.index") . '/{slug}',
                             'example' => route("ranking.show", 'trending-1'),
                             'list_params' => route("params.ranking"),
-                            'note' => 'if {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
+                            'note' => 'If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
                         ]
                     ],
                 ],
@@ -45,33 +45,33 @@ class HomeController extends Controller
                         'all' => [
                             'default' => [
                                 'url' => route("news.index"),
-                                'note' => 'latest 12 news and 1 sponsor news'
+                                'note' => 'Latest 12 news and 1 sponsor news'
                             ],
                             'custom' => [
                                 'url' => route("news.index") . '/filter/distribution={distribution}&release={release}&month={month}&year={year}',
 
-                                'example' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'August', 'year' => 2021]),
+                                'example' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'April', 'year' => 2021]),
 
                                 'list_params' => route("params.news"),
 
-                                'note' => 'if one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct',
+                                'note' => 'If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct',
                             ],
                         ],
                         'detail' => [
                             'url' => route("news.index") . '/{news_id}',
                             'example' => route("news.show", 11300),
-                            'note' => 'if {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct'
+                            'note' => 'If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct'
                         ],
                     ],
                     'weekly_news' => [
                         'all' => [
                             'url' => route("weekly.index"),
-                            'note' => 'warning: big size response'
+                            'note' => 'Warning - big size response'
                         ],
                         'detail' => [
                             'url' => route("weekly.index") . '/{weekly_id}',
                             'example' => route("weekly.show", 20210719),
-                            'note' => 'if {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct'
+                            'note' => 'If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct'
                         ],
                     ],
                 ],
