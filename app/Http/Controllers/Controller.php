@@ -9,5 +9,19 @@ use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
+    /**
+     * @OA\Info(
+     *      version="1.0.0",
+     *      title="Diwa",
+     *      description="Unofficiall Distrowatch API",
+     *      @OA\Contact(
+     *          email="807fahmi@gmail.com"
+     *      ),
+     *      @OA\License(
+     *          name="MIT",
+     *          url="https://opensource.org/licenses/MIT"
+     *      )
+     * )
+     */
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }

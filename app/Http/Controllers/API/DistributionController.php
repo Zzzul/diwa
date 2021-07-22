@@ -38,6 +38,20 @@ class DistributionController extends Controller
     private $bug_tracker = '';
     private $mailing_list = '';
 
+    /**
+     * @OA\Get(
+     *     path="/api/distribution",
+     *     tags={"Distribution"},
+     *     summary="Get all Distribution",
+     *     operationId="getAllDistribution",
+     *     @OA\Response(response="200", description="Success")
+     * )
+     *
+     *  @OA\Tag(
+     *     name="Distribution",
+     *     description="API Endpoints of Distribution"
+     * )
+     */
 
     public function index()
     {
@@ -65,6 +79,26 @@ class DistributionController extends Controller
         ], Response::HTTP_OK);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/distribution/{name}",
+     *     tags={"Distribution"},
+     *     summary="Get distribution information detail",
+     *     description="If {name} not found, will return 404",
+     *     operationId="getDistributionById",
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Parameter(
+     *          name="name",
+     *          description="Distribution Name",
+     *          required=true,
+     *          in="path",
+     *          example="ubuntu",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *     )
+     * )
+     */
     public function show($slug)
     {
         $client = new Client();

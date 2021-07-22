@@ -8,10 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 class HomeController extends Controller
 {
     /**
-     * Handle the incoming request.
+     * @OA\Get(
+     *   path="/api",
+     *   tags={"Home"},
+     *   summary="Get all endpoints and info about this API",
+     *   operationId="home",
+     *   @OA\Response(response=200, description="Success")
+     * )
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     *  @OA\Tag(
+     *     name="Home",
+     *     description="API Endpoints of Home"
+     * )
      */
     public function __invoke()
     {
@@ -19,7 +27,7 @@ class HomeController extends Controller
             'message' => 'Success',
             'status_code' => Response::HTTP_OK,
             'source' => env('DISTROWATCH_URL'),
-            'docs' => 'Coming soon',
+            'docs' => url('/documentation'),
             'endpoints' => [
                 'distribution' => [
                     'all' => route("distribution.index"),

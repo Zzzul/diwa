@@ -21,7 +21,7 @@ Route::prefix('params')->group(function () {
     Route::get('/news', [ParamsController::class, 'newsParams'])->name('params.news');
 });
 
-Route::get('/news/filter/distribution={distribution}&release={release}&month={month}&year={year}', [DistributionNewsController::class, 'filteringNews'])->name('news.filteringNews');
+Route::get('/news/filter/distribution={distribution?}&release={release?}&month={month?}&year={year?}', [DistributionNewsController::class, 'filteringNews'])->name('news.filteringNews');
 
 Route::apiResource('/news', DistributionNewsController::class)->only('index', 'show');
 

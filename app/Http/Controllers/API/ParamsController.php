@@ -14,6 +14,15 @@ class ParamsController extends Controller
     private $year = [];
     private $month = [];
 
+    /**
+     * @OA\Get(
+     *     path="/api/params/ranking",
+     *     tags={"Ranking"},
+     *     summary="Get all available parameters for filter the ranking (below ↓)",
+     *     operationId="GetAllAvailableParametersRanking",
+     *     @OA\Response(response="200", description="Success")
+     * )
+     */
     public function rankingParams()
     {
         $client = new Client();
@@ -38,6 +47,15 @@ class ParamsController extends Controller
         ], Response::HTTP_OK);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/params/news",
+     *     tags={"News"},
+     *     summary="Get all available parameters for filter the news (above ↑)",
+     *     operationId="GetAllAvailableParametersNews",
+     *     @OA\Response(response="200", description="Success")
+     * )
+     */
     public function newsParams()
     {
         $client = new Client();
