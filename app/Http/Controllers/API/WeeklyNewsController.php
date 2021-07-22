@@ -15,9 +15,14 @@ class WeeklyNewsController extends Controller
     private $story = '';
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @OA\Get(
+     *     path="/api/weekly",
+     *     tags={"News"},
+     *     summary="Get all weekly news",
+     *     description="Warning!, big size response",
+     *     operationId="getAllWeeklyNews",
+     *     @OA\Response(response="200", description="Success")
+     * )
      */
     public function index()
     {
@@ -42,11 +47,26 @@ class WeeklyNewsController extends Controller
         ], Response::HTTP_OK);
     }
 
+
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @OA\Get(
+     *     path="/api/weekly/{id}",
+     *     tags={"News"},
+     *     summary="Get weekly news information detail",
+     *     description="If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct",
+     *     operationId="getWeeklyNewsById",
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Parameter(
+     *          name="id",
+     *          description="Weekly News Id",
+     *          required=true,
+     *          in="path",
+     *          example="20210719",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *     ),
+     * )
      */
     public function show($id)
     {

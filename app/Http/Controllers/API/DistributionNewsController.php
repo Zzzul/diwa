@@ -25,6 +25,21 @@ class DistributionNewsController extends Controller
     private $distrowatch_news_url = '';
     private $sponsor = false;
 
+    /**
+     * @OA\Get(
+     *     path="/api/news",
+     *     tags={"News"},
+     *     summary="Get all distribution and weekly news",
+     *     operationId="getAllDistributionNews",
+     *     description="Return latest 12 news and 1 sponsor news",
+     *     @OA\Response(response="200", description="Success")
+     * )
+     *
+     *  @OA\Tag(
+     *     name="News",
+     *     description="API Endpoints of News"
+     * )
+     */
     public function index()
     {
         $client = new Client();
@@ -44,6 +59,26 @@ class DistributionNewsController extends Controller
         ], Response::HTTP_OK);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/news/{id}",
+     *     tags={"News"},
+     *     summary="Get Distribution News information detail",
+     *     description="If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct",
+     *     operationId="getDistributionNewsById",
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Parameter(
+     *          name="id",
+     *          description="News Id",
+     *          required=true,
+     *          in="path",
+     *          example="11302",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *     ),
+     * )
+     */
     public function show($id)
     {
         $client = new Client();
@@ -169,6 +204,56 @@ class DistributionNewsController extends Controller
         ], Response::HTTP_OK);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/news/filter/distribution={name}&release={release}&month={month}&year={year}",
+     *     tags={"News"},
+     *     summary="Get specific distribution news",
+     *     description="If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
+     *     operationId="FilterDistributionNews",
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Parameter(
+     *          name="name",
+     *          description="Distribution Name",
+     *          required=true,
+     *          in="path",
+     *          example="mx",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *     ),
+     *     @OA\Parameter(
+     *          name="release",
+     *          description="Release Version",
+     *          required=true,
+     *          in="path",
+     *          example="stable",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *     ),
+     *     @OA\Parameter(
+     *          name="month",
+     *          description="Month",
+     *          required=true,
+     *          in="path",
+     *          example="april",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *     ),
+     *     @OA\Parameter(
+     *          name="year",
+     *          description="Year",
+     *          required=true,
+     *          in="path",
+     *          example="2021",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *     ),
+     * )
+     */
     public function filteringNews(
         $distribution = 'all',
         $release = 'all',
