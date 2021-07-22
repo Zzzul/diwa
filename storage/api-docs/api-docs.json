@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Diwa",
-        "description": "Unofficial Distrowatch API",
+        "description": "Unofficiall Distrowatch API",
         "contact": {
             "email": "807fahmi@gmail.com"
         },
@@ -290,7 +290,7 @@
         },
         {
             "name": "Home",
-            "description": "All endpoints and info about this API"
+            "description": "API Endpoints of Home"
         },
         {
             "name": "Ranking",

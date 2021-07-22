@@ -18,7 +18,7 @@ class HomeController extends Controller
      *
      *  @OA\Tag(
      *     name="Home",
-     *     description="Get all endpoints and info about this API"
+     *     description="API Endpoints of Home"
      * )
      */
     public function __invoke()

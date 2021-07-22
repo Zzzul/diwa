@@ -13,7 +13,7 @@ class Controller extends BaseController
      * @OA\Info(
      *      version="1.0.0",
      *      title="Diwa",
-     *      description="Unofficial Distrowatch API",
+     *      description="Unofficiall Distrowatch API",
      *      @OA\Contact(
      *          email="807fahmi@gmail.com"
      *      ),
