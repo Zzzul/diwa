@@ -33,10 +33,11 @@ class WeeklyNewsController extends Controller
         $crawler = $client->request('GET', $url);
 
         $crawler->filter('.List')->each(function ($node) {
+            $url = $node->filter('a')->link()->getUri();
             $this->list[] = [
-                'distrowatch_weekly_detail_url' => $node->filter('a')->link()->getUri(),
-                'weekly_detail_url' => 'coming soon',
-                'text' => Str::remove('• ', $node->text())
+                'distrowatch_weekly_detail_url' => $url,
+                'weekly_detail_url' => route("weekly.show", Str::after($url, '?issue=')),
+                'title' => Str::remove('• ', $node->text())
             ];
         });
 

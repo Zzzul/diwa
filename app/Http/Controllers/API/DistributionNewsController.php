@@ -237,7 +237,7 @@ class DistributionNewsController extends Controller
      *          description="Month",
      *          required=true,
      *          in="path",
-     *          example="april",
+     *          example="all",
      *          @OA\Schema(
      *              type="string"
      *          )
@@ -277,47 +277,49 @@ class DistributionNewsController extends Controller
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Scrap datas used DOM
+     */
     public function getNewsData($node, $i)
     {
         if ($i >= 1) {
             $headline = $node->children()->filter('td')->nextAll()->text();
 
-            if (count($node->children()->filter('td')->nextAll()->filter('a')->nextAll()) > 0) {
-                // distribution and weekly news
+            if (Str::contains($headline, 'DistroWatch Weekly')) {
                 $news_detail_url_params = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
 
+                $this->news_detail_url = route("weekly.show", Str::after($news_detail_url_params, 'weekly.php?issue='));
+
                 $this->distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->link()->getUri();
-            } else {
-                // sponsor news
-                $this->distrowatch_news_url =  $node->children()->filter('td')->nextAll()->filter('a')->link()->getUri();
-
-                $news_detail_url_params = '3cx&ver=pbx';
-
-                $this->sponsor = true;
-            }
-
-
-            if (Str::contains($headline, 'DistroWatch Weekly') || Str::contains($headline, 'Featured Distribution')) {
-                // sponsor and weekly news
-                if (Str::contains($headline, 'Featured Distribution')) {
-                    $this->news_detail_url = route("distribution.show", $news_detail_url_params);
-                }
-
-                if (Str::contains($headline, 'DistroWatch Weekly')) {
-                    $this->news_detail_url = route("weekly.show", Str::after($news_detail_url_params, 'weekly.php?issue='));
-                }
 
                 $this->distribution_detail_url = '';
                 $this->distrowatch_distribution_detail_url =  '';
-            } else {
-                // distribution news
-                $this->news_detail_url = route("news.show", $news_detail_url_params);
+            } elseif (Str::contains($headline, 'Featured Distribution')) {
+                // sponsor news
+                $href = Str::after($node->children()->filter('.NewsLogo')->filter('a')->attr('href'), '?distribution=');
 
-                $href = $node->children()->filter('.NewsLogo')->filter('a')->attr('href');
                 $this->distribution_detail_url = route("distribution.show", $href);
 
                 $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
-            };
+
+                $this->sponsor = true;
+
+                $this->distrowatch_news_url = '';
+                $this->news_detail_url = '';
+            } else {
+                // distribution news
+                $news_detail_url_params = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
+
+                $href = Str::after($node->children()->filter('.NewsLogo')->filter('a')->attr('href'), '?distribution=');
+
+                $this->news_detail_url = route("news.show", $news_detail_url_params);
+
+                $this->distribution_detail_url = route("distribution.show", $href);
+
+                $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
+
+                $this->distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->link()->getUri();
+            }
 
             $this->news[] = [
                 'headline' => Str::remove('NEW • ', $headline),

@@ -1,23 +1,23 @@
 <div align="center">
-<h1>Diwa: Distrowatch Unofficial API</h1>
+<h1>Diwa: unofficiall Distrowatch API</h1>
 <p>Get some public data of Distrowatch just from the API</p>
 </div>
 
-
 # Demo 
-[Click Here!](http://diwa.herokuapp.com/api)
+[Demo!](http://diwa.herokuapp.com/api)
 
+# Docs 
+[Docs!](http://diwa.herokuapp.com/documentation)
 
 # Description
 Diwa is an open source project and simple unofficail API from [Distrowatch](https://distrowatch.com/) site to get some public data of open source system operation like linux, bsd, etc. for the routes, you can see it below.
-
 
 # Tech Stack
 For the tech stack, Diwa was using :
 - [PHP](https://php.net/)
 - [Laravel](https://laravel.com/)
 - [Laravel-goutte](https://github.com/dweidner/laravel-goutte)
-
+- [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger)
 
 # Routes lists
 For now, Diwa has a more than 10 routes to get the current data of distribution, ranking, news, etc.
@@ -36,7 +36,6 @@ For now, Diwa has a more than 10 routes to get the current data of distribution,
 | News Detail | Get News information detail | /api/news/{news_id} <br><br> example: /api/news/11300 | If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct
 | All Weekly News | Get all weekly news | /api/weekly | Warning!, big size response
 | Weekly News Detail | Get weekly news information detail | /api/weekly/{weekly_id} <br><br> example: /api/weekly/20210719 <br><br> You can get all available parameters below. | If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct
-
 
 # Installation
 If you want to add this project in your own machine, you can install this project by following the step below
@@ -61,14 +60,11 @@ $ cp .env.example .env
 $ php artisan serve
 ```
 
-
 # Showcase
 If you use this API to your project application, you can register your project in this showcase below :
 
-
 # Contribution
 Want to make this project better? You can contribute this project, I am very open if there are contributions to this project.
-
 
 # License
 MIT License.
