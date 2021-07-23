@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Goutte\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class ParamsController extends Controller
@@ -25,26 +26,29 @@ class ParamsController extends Controller
      */
     public function rankingParams()
     {
-        $client = new Client();
+        return Cache::rememberForever('rankingParams',  function () {
+            $client = new Client();
 
-        $url = env('DISTROWATCH_URL');
+            $url = env('DISTROWATCH_URL');
 
-        $crawler = $client->request('GET', $url);
+            $crawler = $client->request('GET', $url);
 
-        $crawler->filter('select')->eq(5)->children()->each(function ($node) {
-            if ($node->attr('value') != null && $node->text() != '') {
-                $this->distribution[] = [
-                    'slug' => $node->attr('value'),
-                    'text' => $node->text(),
-                ];
-            }
+            // All distribution
+            $crawler->filter('select')->eq(5)->children()->each(function ($node) {
+                if ($node->attr('value') != null && $node->text() != '') {
+                    $this->distribution[] = [
+                        'slug' => $node->attr('value'),
+                        'text' => $node->text(),
+                    ];
+                }
+            });
+
+            return response()->json([
+                'message' => 'Success.',
+                'status_code' => Response::HTTP_OK,
+                'params' => $this->distribution
+            ], Response::HTTP_OK);
         });
-
-        return response()->json([
-            'message' => 'Success.',
-            'status_code' => Response::HTTP_OK,
-            'params' => $this->distribution
-        ], Response::HTTP_OK);
     }
 
     /**
@@ -58,50 +62,55 @@ class ParamsController extends Controller
      */
     public function newsParams()
     {
-        $client = new Client();
+        return Cache::rememberForever('newsParams',  function () {
+            $client = new Client();
 
-        $url = env('DISTROWATCH_URL');
+            $url = env('DISTROWATCH_URL');
 
-        $crawler = $client->request('GET', $url);
+            $crawler = $client->request('GET', $url);
 
-        $crawler->filter('.Introduction')->filter('select')->eq(0)->filter('option')->each(function ($node) {
-            $this->distribution[] = [
-                'slug' => $node->attr('value'),
-                'text' => $node->text(),
-            ];
+            // All distribution
+            $crawler->filter('.Introduction')->filter('select')->eq(0)->filter('option')->each(function ($node) {
+                $this->distribution[] = [
+                    'slug' => $node->attr('value'),
+                    'text' => $node->text(),
+                ];
+            });
+
+            // Year
+            $crawler->filter('.Introduction')->filter('select')->eq(1)->filter('option')->each(function ($node) {
+                $this->release[] = [
+                    'slug' => $node->attr('value'),
+                    'text' => $node->text(),
+                ];
+            });
+
+            // Months
+            $crawler->filter('.Introduction')->filter('select')->eq(2)->filter('option')->each(function ($node) {
+                $this->month[] = [
+                    'slug' => $node->attr('value'),
+                    'text' => $node->text(),
+                ];
+            });
+
+            // Years
+            $crawler->filter('.Introduction')->filter('select')->eq(3)->filter('option')->each(function ($node) {
+                $this->year[] = [
+                    'slug' => $node->attr('value'),
+                    'text' => $node->text(),
+                ];
+            });
+
+            return response()->json([
+                'message' => 'Success.',
+                'status_code' => Response::HTTP_OK,
+                'params' => [
+                    'distribution' => $this->distribution,
+                    'release' => $this->release,
+                    'month' => $this->month,
+                    'year' => $this->year,
+                ]
+            ], Response::HTTP_OK);
         });
-
-        $crawler->filter('.Introduction')->filter('select')->eq(1)->filter('option')->each(function ($node) {
-            $this->release[] = [
-                'slug' => $node->attr('value'),
-                'text' => $node->text(),
-            ];
-        });
-
-        $crawler->filter('.Introduction')->filter('select')->eq(2)->filter('option')->each(function ($node) {
-            $this->month[] = [
-                'slug' => $node->attr('value'),
-                'text' => $node->text(),
-            ];
-        });
-
-        $crawler->filter('.Introduction')->filter('select')->eq(3)->filter('option')->each(function ($node) {
-            $this->year[] = [
-                'slug' => $node->attr('value'),
-                'text' => $node->text(),
-            ];
-        });
-
-
-        return response()->json([
-            'message' => 'Success.',
-            'status_code' => Response::HTTP_OK,
-            'params' => [
-                'distribution' => $this->distribution,
-                'release' => $this->release,
-                'month' => $this->month,
-                'year' => $this->year,
-            ]
-        ], Response::HTTP_OK);
     }
 }

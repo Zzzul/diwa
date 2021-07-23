@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class WeeklyNewsController extends Controller
@@ -26,26 +27,31 @@ class WeeklyNewsController extends Controller
      */
     public function index()
     {
-        $client = new Client();
+        // 1 day
+        $seocnds = 86400;
 
-        $url = env('DISTROWATCH_URL') . 'weekly.php';
+        return Cache::remember('allWeeklyNews', $seocnds, function () {
+            $client = new Client();
 
-        $crawler = $client->request('GET', $url);
+            $url = env('DISTROWATCH_URL') . 'weekly.php';
 
-        $crawler->filter('.List')->each(function ($node) {
-            $url = $node->filter('a')->link()->getUri();
-            $this->list[] = [
-                'distrowatch_weekly_detail_url' => $url,
-                'weekly_detail_url' => route("weekly.show", Str::after($url, '?issue=')),
-                'title' => Str::remove('• ', $node->text())
-            ];
+            $crawler = $client->request('GET', $url);
+
+            $crawler->filter('.List')->each(function ($node) {
+                $url = $node->filter('a')->link()->getUri();
+                $this->list[] = [
+                    'distrowatch_weekly_detail_url' => $url,
+                    'weekly_detail_url' => route("weekly.show", Str::after($url, '?issue=')),
+                    'title' => Str::remove('• ', $node->text())
+                ];
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'list' => $this->list
+            ], Response::HTTP_OK);
         });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'list' => $this->list
-        ], Response::HTTP_OK);
     }
 
 
@@ -71,35 +77,40 @@ class WeeklyNewsController extends Controller
      */
     public function show($id)
     {
-        $client = new Client();
+        // 1 day
+        $seocnds = 86400;
 
-        $url = env('DISTROWATCH_URL') . "weekly.php?issue=$id";
+        return Cache::remember('weeklyNews' . $id, $seocnds, function () use ($id) {
+            $client = new Client();
 
-        $crawler = $client->request('GET', $url);
+            $url = env('DISTROWATCH_URL') . "weekly.php?issue=$id";
 
-        // title
-        $this->title = $crawler->filter('.rTitle')->text();
+            $crawler = $client->request('GET', $url);
 
-        // stoty
-        $remove_ul_text = Str::remove($crawler->filter('.rStory')->filter('ul')->text(), $crawler->filter('.rStory')->text());
+            // title
+            $this->title = $crawler->filter('.rTitle')->text();
 
-        $this->story = Str::before($remove_ul_text, 'Content:  Listen to the Podcast');
+            // stoty
+            $remove_ul_text = Str::remove($crawler->filter('.rStory')->filter('ul')->text(), $crawler->filter('.rStory')->text());
 
-        $crawler->filter('.rStory')->eq(0)->filter('ul')->filter('a')->each(function ($node) {
-            $this->content[] = [
-                'url' =>  $node->link()->getUri(),
-                'text' => $node->text()
-            ];
+            $this->story = Str::before($remove_ul_text, 'Content:  Listen to the Podcast');
+
+            $crawler->filter('.rStory')->eq(0)->filter('ul')->filter('a')->each(function ($node) {
+                $this->content[] = [
+                    'url' =>  $node->link()->getUri(),
+                    'text' => $node->text()
+                ];
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'issue' => [
+                    'title' => $this->title,
+                    'story' => $this->story,
+                    'content' => $this->content
+                ]
+            ], Response::HTTP_OK);
         });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'issue' => [
-                'title' => $this->title,
-                'story' => $this->story,
-                'content' => $this->content
-            ]
-        ], Response::HTTP_OK);
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Goutte\Client;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class RankingController extends Controller
@@ -33,50 +35,56 @@ class RankingController extends Controller
      */
     public function index()
     {
-        $client = new Client();
+        // 1 month
+        $seconds = 60 * 60 * 24 * 30;
 
-        $url = env('DISTROWATCH_URL');
+        return Cache::remember('rangkingDefault', $seconds, function () {
 
-        $crawler = $client->request('GET', $url);
+            $client = new Client();
 
-        $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+            $url = env('DISTROWATCH_URL');
 
-            $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
+            $crawler = $client->request('GET', $url);
 
-            $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+            $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
 
-            $hpd = $node->nextAll()->filter('img');
-            if (count($hpd) > 0) {
-                $this->alt =  $hpd->attr('alt');
-                $this->status = ($this->alt == '<')
-                    ? 'adown' : (($this->alt == '>')
-                        ? 'aup' : 'alevel');
-                $this->image = $url . $hpd->attr('src');
-            }
+                $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
 
-            $this->rankings[] = [
-                'no' => $i + 1,
-                'distribution' => $node->filter('a')->text(),
-                'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
-                'distribution_detail_url' => $this->distribution_detail_url,
-                // hits per day
-                'hpd' => [
-                    'count' => intval($node->nextAll()->text()),
-                    'status' => $this->status,
-                    'alt' => $this->alt,
-                    'image' => $this->image,
-                ],
-                'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),
-            ];
+                $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+
+                $hpd = $node->nextAll()->filter('img');
+                if (count($hpd) > 0) {
+                    $this->alt =  $hpd->attr('alt');
+                    $this->status = ($this->alt == '<')
+                        ? 'adown' : (($this->alt == '>')
+                            ? 'aup' : 'alevel');
+                    $this->image = $url . $hpd->attr('src');
+                }
+
+                $this->rankings[] = [
+                    'no' => $i + 1,
+                    'distribution' => $node->filter('a')->text(),
+                    'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
+                    'distribution_detail_url' => $this->distribution_detail_url,
+                    // hits per day
+                    'hpd' => [
+                        'count' => intval($node->nextAll()->text()),
+                        'status' => $this->status,
+                        'alt' => $this->alt,
+                        'image' => $this->image,
+                    ],
+                    'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),
+                ];
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'hpd' => 'Hits Per Day',
+                'data_span' => 'Last 6 months',
+                'rankings' => $this->rankings
+            ]);
         });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'hpd' => 'Hits Per Day',
-            'data_span' => 'Last 6 months',
-            'rankings' => $this->rankings
-        ]);
     }
 
     /**
@@ -101,60 +109,67 @@ class RankingController extends Controller
      */
     public function show($slug)
     {
-        $client = new Client();
+        // 1 day
+        $seconds = 86400;
 
-        $url = env('DISTROWATCH_URL') . "?dataspan=$slug";
+        $cache_name = Str::camel('ranking ' . $slug);
 
-        $crawler = $client->request('GET', $url);
+        return Cache::remember($cache_name, $seconds, function () use ($slug) {
+            $client = new Client();
 
-        $crawler->filter('select')->eq(5)->children()->each(function ($node) use ($slug) {
-            if ($node->attr('value') == $slug) {
-                $this->data_span = $node->text();
-            }
+            $url = env('DISTROWATCH_URL') . "?dataspan=$slug";
+
+            $crawler = $client->request('GET', $url);
+
+            $crawler->filter('select')->eq(5)->children()->each(function ($node) use ($slug) {
+                if ($node->attr('value') == $slug) {
+                    $this->data_span = $node->text();
+                }
+            });
+
+            // dd($this->data_span);
+            $this->data_span != '' ? $this->data_span = $this->data_span : $this->data_span = 'Last 6 months';
+
+            $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+
+                $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
+
+                $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+
+                $hpd = $node->nextAll()->filter('img');
+                if (count($hpd) > 0) {
+                    $this->alt = $hpd->attr('alt');
+                    $this->status = ($this->alt == '<')
+                        ? 'adown' : (($this->alt == '>')
+                            ? 'aup' : 'alevel');
+                    $this->image = $url . $hpd->attr('src');
+                }
+
+                $this->alt = count($node->nextAll()->filter('img')) > 0 ? $node->nextAll()->filter('img')->attr('alt') : '';
+
+                $this->rankings[] = [
+                    'no' => $i + 1,
+                    'distribution' => $node->filter('a')->text(),
+                    'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
+                    'distribution_detail_url' => $this->distribution_detail_url,
+                    // hits per day
+                    'hpd' => [
+                        'count' => intval($node->nextAll()->text()),
+                        'status' => $this->status,
+                        'alt' => $this->alt == null ? '' : $this->alt,
+                        'image' => $this->image,
+                    ],
+                    'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),
+                ];
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'hpd' => 'Hits Per Day',
+                'data_span' => $this->data_span,
+                'ranking' => $this->rankings,
+            ]);
         });
-
-        // dd($this->data_span);
-        $this->data_span != '' ? $this->data_span = $this->data_span : $this->data_span = 'Last 6 months';
-
-        $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
-
-            $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
-
-            $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
-
-            $hpd = $node->nextAll()->filter('img');
-            if (count($hpd) > 0) {
-                $this->alt = $hpd->attr('alt');
-                $this->status = ($this->alt == '<')
-                    ? 'adown' : (($this->alt == '>')
-                        ? 'aup' : 'alevel');
-                $this->image = $url . $hpd->attr('src');
-            }
-
-            $this->alt = count($node->nextAll()->filter('img')) > 0 ? $node->nextAll()->filter('img')->attr('alt') : '';
-
-            $this->rankings[] = [
-                'no' => $i + 1,
-                'distribution' => $node->filter('a')->text(),
-                'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
-                'distribution_detail_url' => $this->distribution_detail_url,
-                // hits per day
-                'hpd' => [
-                    'count' => intval($node->nextAll()->text()),
-                    'status' => $this->status,
-                    'alt' => $this->alt == null ? '' : $this->alt,
-                    'image' => $this->image,
-                ],
-                'hits_yesterday_count' => intval(Str::remove('Yesterday: ', $node->nextAll()->attr('title'))),
-            ];
-        });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'hpd' => 'Hits Per Day',
-            'data_span' => $this->data_span,
-            'ranking' => $this->rankings,
-        ]);
     }
 }

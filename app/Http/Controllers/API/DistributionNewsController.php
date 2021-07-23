@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use Goutte\Client;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class DistributionNewsController extends Controller
@@ -42,21 +43,26 @@ class DistributionNewsController extends Controller
      */
     public function index()
     {
-        $client = new Client();
+        // 1 hour
+        $seocnds = 3600;
 
-        $url = env('DISTROWATCH_URL');
+        return Cache::remember('allNews', $seocnds, function () {
+            $client = new Client();
 
-        $crawler = $client->request('GET', $url);
+            $url = env('DISTROWATCH_URL');
 
-        $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
-            $this->getNewsData($node, $i);
+            $crawler = $client->request('GET', $url);
+
+            $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
+                $this->getNewsData($node, $i);
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'news' => $this->news
+            ], Response::HTTP_OK);
         });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'news' => $this->news
-        ], Response::HTTP_OK);
     }
 
     /**
@@ -81,127 +87,132 @@ class DistributionNewsController extends Controller
      */
     public function show($id)
     {
-        $client = new Client();
+        // i day
+        $seocnds = 86400;
 
-        $url = env('DISTROWATCH_URL') . "?newsid=$id";
+        return Cache::remember('DistributionNews' . $id, $seocnds, function () use ($id) {
+            $client = new Client();
 
-        $crawler = $client->request('GET', $url);
+            $url = env('DISTROWATCH_URL') . "?newsid=$id";
 
-        // body
-        $crawler->filter('.News1 > table')->eq(1)->each(function ($node) {
-            $headline = $node->children()->filter('td')->nextAll()->text();
+            $crawler = $client->request('GET', $url);
 
-            $this->distrowatch_url_news = $node->children()->filter('td')->nextAll()->filter('a')->eq(1)->link()->getUri();
+            // body
+            $crawler->filter('.News1 > table')->eq(1)->each(function ($node) {
+                $headline = $node->children()->filter('td')->nextAll()->text();
 
-            $this->date = $node->children()->filter('td')->text();
+                $this->distrowatch_url_news = $node->children()->filter('td')->nextAll()->filter('a')->eq(1)->link()->getUri();
 
-            $this->headline = Str::remove('NEW • ', $headline);
+                $this->date = $node->children()->filter('td')->text();
 
-            $this->thumbnail = env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src');
+                $this->headline = Str::remove('NEW • ', $headline);
 
-            $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
+                $this->thumbnail = env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src');
 
-            $this->body = [
-                'text' => $node->children()->filter('.NewsText')->text(),
-                'html' => $node->children()->filter('.NewsText')->html()
-            ];
-        });
-        // end of body
+                $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
 
-        // about
-        $crawler->filter('.Background > td')->eq(1)->each(function ($node) {
-            $this->about = $node->text();
-        });
-
-        // distribution_summary
-        $summary = $crawler->filter('.Info')->eq(4)->filter('.Info');
-        $this->distribution_summary['distribution'] = $summary->eq(2)->text();
-
-        $this->distribution_summary['home_page'] = $summary->eq(4)->text();
-
-        $this->distribution_summary['mailing_lists'] = $summary->eq(6)->text() != '--' ? $summary->eq(6)->text() : '';
-
-        $this->distribution_summary['user_forum'] = $summary->eq(8)->text() != '--' ? $summary->eq(8)->text() : '';
-
-        $this->distribution_summary['alternative_user_forum'] = $summary->eq(10)->text() != '--' ? $summary->eq(10)->text() : '';
-
-        $summary->eq(12)->filter('a')->each(function ($node) {
-            $this->distribution_summary['documentation'][] = $node->link()->getUri();
-        });
-
-        $summary->eq(14)->filter('a')->each(function ($node) {
-            $this->distribution_summary['gallery'][] = $node->link()->getUri();
-        });
-
-        $summary->eq(16)->filter('a')->each(function ($node) {
-            if (count($node) > 0) {
-                $this->distribution_summary['screencasts'][] = $node->link()->getUri();
-            } else {
-                $this->distribution_summary['screencasts'] = '';
-            }
-        });
-
-        $summary->eq(18)->filter('a')->each(function ($node) {
-            if (count($node) > 0) {
-                $this->distribution_summary['download_mirrors'][] = $node->link()->getUri();
-            } else {
-                $this->distribution_summary['download_mirrors'] = '';
-            }
-        });
-
-        $this->distribution_summary['bug_tracker'] = $summary->eq(20)->filter('a')->link()->getUri();
-
-        $summary->eq(22)->filter('a')->each(function ($node) {
-            $this->distribution_summary['related_websites'][] = $node->link()->getUri();
-        });
-
-        $summary->eq(24)->filter('a')->each(function ($node) {
-            $this->distribution_summary['reviews'][] = $node->link()->getUri();
-        });
-
-        if (count($summary->eq(26)->filter('a')) > 0) {
-            $this->distribution_summary['where_to_buy']['text'] = $summary->eq(26)->filter('a')->text();
-            $this->distribution_summary['where_to_buy']['url'] = $summary->eq(26)->filter('a')->link()->getUri();
-        } else {
-            $this->distribution_summary['where_to_buy'] = '';
-        }
-        // end of summary
-
-        // Screenshots
-        $crawler->filter('.Info')->eq(31)->each(function ($node) {
-            $this->screenshots = env('DISTROWATCH_URL') . $node->filter('img')->attr('src');
-        });
-
-        // recent_related_news_and_releases
-        $crawler->filter('.Background > td')->eq(0)->each(function ($node) {
-            $node->filter('a')->each(function ($item, $i) {
-                $this->recent_related_news_and_releases[] = [
-                    'text' => $item->text(),
-                    'url' => $item->link()->getUri()
+                $this->body = [
+                    'text' => $node->children()->filter('.NewsText')->text(),
+                    'html' => $node->children()->filter('.NewsText')->html()
                 ];
             });
+            // end of body
+
+            // about
+            $crawler->filter('.Background > td')->eq(1)->each(function ($node) {
+                $this->about = $node->text();
+            });
+
+            // distribution_summary
+            $summary = $crawler->filter('.Info')->eq(4)->filter('.Info');
+            $this->distribution_summary['distribution'] = $summary->eq(2)->text();
+
+            $this->distribution_summary['home_page'] = $summary->eq(4)->text();
+
+            $this->distribution_summary['mailing_lists'] = $summary->eq(6)->text() != '--' ? $summary->eq(6)->text() : '';
+
+            $this->distribution_summary['user_forum'] = $summary->eq(8)->text() != '--' ? $summary->eq(8)->text() : '';
+
+            $this->distribution_summary['alternative_user_forum'] = $summary->eq(10)->text() != '--' ? $summary->eq(10)->text() : '';
+
+            $summary->eq(12)->filter('a')->each(function ($node) {
+                $this->distribution_summary['documentation'][] = $node->link()->getUri();
+            });
+
+            $summary->eq(14)->filter('a')->each(function ($node) {
+                $this->distribution_summary['gallery'][] = $node->link()->getUri();
+            });
+
+            $summary->eq(16)->filter('a')->each(function ($node) {
+                if (count($node) > 0) {
+                    $this->distribution_summary['screencasts'][] = $node->link()->getUri();
+                } else {
+                    $this->distribution_summary['screencasts'] = '';
+                }
+            });
+
+            $summary->eq(18)->filter('a')->each(function ($node) {
+                if (count($node) > 0) {
+                    $this->distribution_summary['download_mirrors'][] = $node->link()->getUri();
+                } else {
+                    $this->distribution_summary['download_mirrors'] = '';
+                }
+            });
+
+            $this->distribution_summary['bug_tracker'] = $summary->eq(20)->filter('a')->link()->getUri();
+
+            $summary->eq(22)->filter('a')->each(function ($node) {
+                $this->distribution_summary['related_websites'][] = $node->link()->getUri();
+            });
+
+            $summary->eq(24)->filter('a')->each(function ($node) {
+                $this->distribution_summary['reviews'][] = $node->link()->getUri();
+            });
+
+            if (count($summary->eq(26)->filter('a')) > 0) {
+                $this->distribution_summary['where_to_buy']['text'] = $summary->eq(26)->filter('a')->text();
+                $this->distribution_summary['where_to_buy']['url'] = $summary->eq(26)->filter('a')->link()->getUri();
+            } else {
+                $this->distribution_summary['where_to_buy'] = '';
+            }
+            // end of summary
+
+            // Screenshots
+            $crawler->filter('.Info')->eq(31)->each(function ($node) {
+                $this->screenshots = env('DISTROWATCH_URL') . $node->filter('img')->attr('src');
+            });
+
+            // recent_related_news_and_releases
+            $crawler->filter('.Background > td')->eq(0)->each(function ($node) {
+                $node->filter('a')->each(function ($item, $i) {
+                    $this->recent_related_news_and_releases[] = [
+                        'text' => $item->text(),
+                        'url' => $item->link()->getUri()
+                    ];
+                });
+            });
+            // end of recent_related_news_and_releases
+
+            $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'distrowatch_news_url' => $this->distrowatch_url_news,
+                'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
+                'distribution_detail_url' => $this->distribution_detail_url,
+                'news_detail' => [
+                    'headline' => $this->headline,
+                    'date' => $this->date,
+                    'thumbnail' => $this->thumbnail,
+                    'about' => $this->about,
+                    'body' => $this->body,
+                    'summary' => $this->distribution_summary,
+                    'screenshots' => $this->screenshots,
+                    'recent_related_news_and_releases' => $this->recent_related_news_and_releases,
+                ]
+            ], Response::HTTP_OK);
         });
-        // end of recent_related_news_and_releases
-
-        $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'distrowatch_news_url' => $this->distrowatch_url_news,
-            'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
-            'distribution_detail_url' => $this->distribution_detail_url,
-            'news_detail' => [
-                'headline' => $this->headline,
-                'date' => $this->date,
-                'thumbnail' => $this->thumbnail,
-                'about' => $this->about,
-                'body' => $this->body,
-                'summary' => $this->distribution_summary,
-                'screenshots' => $this->screenshots,
-                'recent_related_news_and_releases' => $this->recent_related_news_and_releases,
-            ]
-        ], Response::HTTP_OK);
     }
 
     /**
@@ -260,25 +271,32 @@ class DistributionNewsController extends Controller
         $month = 'all',
         $year = 'all'
     ) {
-        $client = new Client();
+        // i day
+        $seocnds = 86400;
 
-        $url = env('DISTROWATCH_URL') . "?distribution=$distribution&release=$release&month=$month&year=$year";
+        $cache_name = Str::camel($distribution . ' ' . $release . ' ' . $month . ' ' . $year);
 
-        $crawler = $client->request('GET', $url);
+        return Cache::remember($cache_name, $seocnds, function () use ($distribution, $release, $month, $year) {
+            $client = new Client();
 
-        $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
-            $this->getNewsData($node, $i);
+            $url = env('DISTROWATCH_URL') . "?distribution=$distribution&release=$release&month=$month&year=$year";
+
+            $crawler = $client->request('GET', $url);
+
+            $crawler->filter('.News1 > table')->reduce(function ($node, $i) {
+                $this->getNewsData($node, $i);
+            });
+
+            return response()->json([
+                'message' => 'Success',
+                'status_code' => Response::HTTP_OK,
+                'news' => $this->news
+            ], Response::HTTP_OK);
         });
-
-        return response()->json([
-            'message' => 'Success',
-            'status_code' => Response::HTTP_OK,
-            'news' => $this->news
-        ], Response::HTTP_OK);
     }
 
     /**
-     * Scrap datas used DOM
+     * Scrap datas used DOM (for index and show method)
      */
     public function getNewsData($node, $i)
     {
