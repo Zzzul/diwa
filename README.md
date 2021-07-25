@@ -1,6 +1,5 @@
 <div align="center">
 <h1>Diwa: unofficiall Distrowatch API</h1>
-<p>Get some public data of Distrowatch just from the API</p>
 </div>
 
 # Demo 
@@ -10,14 +9,8 @@
 [Docs!](http://diwa.herokuapp.com/documentation)
 
 # Description
-Diwa is an open source project and simple unofficail API from [Distrowatch](https://distrowatch.com/) site to get some public data of open source system operation like linux, bsd, etc. for the routes, you can see it below.
+Diwa is an open source project and simple unofficail API from [Distrowatch](https://distrowatch.com/) site to get some public data of open source system operation like Linux, BSD, etc. for the routes, you can see it below.
 
-# Tech Stack
-For the tech stack, Diwa was using :
-- [PHP](https://php.net/)
-- [Laravel](https://laravel.com/)
-- [Laravel-goutte](https://github.com/dweidner/laravel-goutte)
-- [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger)
 
 # Routes lists
 For now, Diwa has a more than 10 routes to get the current data of distribution, ranking, news, etc.
