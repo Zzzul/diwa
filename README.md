@@ -44,10 +44,13 @@ Install all dependencies
 $ composer install
 ```
 
-Generate app key, configure `.env` file and do migration.
+Generate app key, configure `.env` file.
 ```shell
 # create copy of .env
 $ cp .env.example .env
+
+# create laravel key
+$ php artisan key:generate
 
 # Start Laravel local development server
 $ php artisan serve
