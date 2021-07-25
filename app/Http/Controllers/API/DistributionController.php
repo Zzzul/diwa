@@ -55,10 +55,7 @@ class DistributionController extends Controller
 
     public function index()
     {
-        // 1 day
-        $seocnds = 86400;
-
-        return Cache::remember('allDistribution', $seocnds, function () {
+        return Cache::rememberForever('allDistribution', function () {
 
             $client = new Client();
 

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\{HomeController, ParamsController, RankingController, WeeklyNewsController, DistributionController, DistributionNewsController};
+use App\Http\Controllers\API\{HomeController, ParamsController, RankingController, WeeklyNewsController, DistributionController, DistributionNewsController, SearchController};
 
 /*
 |--------------------------------------------------------------------------
@@ -30,3 +30,9 @@ Route::apiResource('/weekly', WeeklyNewsController::class)->only('index', 'show'
 Route::apiResource('/ranking', RankingController::class)->only('index', 'show');
 
 Route::apiResource('/distribution', DistributionController::class)->only('index', 'show');
+
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get(
+    '/search/filter/os_type={os_type}&category={distribution_category}&origin={origin}&basedon={based_on}&notbasedon={not_based_on}&dekstop={dekstop}&architecture={architecture}&package={package}&rolling={rolling}&',
+    [SearchController::class, 'show']
+)->name('search.show');
