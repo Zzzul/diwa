@@ -21,7 +21,7 @@ Route::prefix('params')->group(function () {
     Route::get('/news', [ParamsController::class, 'newsParams'])->name('params.news');
 });
 
-Route::get('/news/filter/distribution={distribution?}&release={release?}&month={month?}&year={year?}', [DistributionNewsController::class, 'filteringNews'])->name('news.filteringNews');
+Route::get('filter/news', [DistributionNewsController::class, 'filterNews'])->name('news.filter');
 
 Route::apiResource('/news', DistributionNewsController::class)->only('index', 'show');
 
@@ -32,7 +32,4 @@ Route::apiResource('/ranking', RankingController::class)->only('index', 'show');
 Route::apiResource('/distribution', DistributionController::class)->only('index', 'show');
 
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-Route::get(
-    '/search/filter/os_type={os_type}&category={distribution_category}&origin={origin}&basedon={based_on}&notbasedon={not_based_on}&dekstop={dekstop}&architecture={architecture}&package={package}&rolling={rolling}&',
-    [SearchController::class, 'show']
-)->name('search.show');
+Route::get('filter/search', [SearchController::class, 'show'])->name('search.filter');

@@ -265,14 +265,14 @@ class DistributionNewsController extends Controller
      *     ),
      * )
      */
-    public function filteringNews(
-        $distribution = 'all',
-        $release = 'all',
-        $month = 'all',
-        $year = 'all'
-    ) {
+    public function filterNews() {
         // i day
         $seocnds = 86400;
+
+        $distribution = request()->distribution ?? 'all';
+        $release = request()->release ?? 'all';
+        $month = request()->month ?? 'all';
+        $year = request()->year ?? 'all';
 
         $cache_name = Str::camel($distribution . ' ' . $release . ' ' . $month . ' ' . $year);
 
@@ -304,6 +304,7 @@ class DistributionNewsController extends Controller
             $headline = $node->children()->filter('td')->nextAll()->text();
 
             if (Str::contains($headline, 'DistroWatch Weekly')) {
+                // Weekly news
                 $news_detail_url_params = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
 
                 $this->news_detail_url = route("weekly.show", Str::after($news_detail_url_params, 'weekly.php?issue='));

@@ -59,9 +59,9 @@ class HomeController extends Controller
                                     'note' => 'Latest 12 news and 1 sponsor news'
                                 ],
                                 'custom' => [
-                                    'url' => route("news.index") . '/filter/distribution={distribution}&release={release}&month={month}&year={year}',
+                                    'url' => route("news.filter") . '?distribution=distribution_name&release=realease&month=month&year=year',
 
-                                    'example' => route("news.filteringNews", ['distribution' => 'mx', 'release' => 'stable', 'month' => 'April', 'year' => 2021]),
+                                    'example' => route("news.filter") . '?distribution=ubuntu&release=stable&month=all&year=2021',
 
                                     'list_params' => route("params.news"),
 
