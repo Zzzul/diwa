@@ -35,8 +35,8 @@ class RankingController extends Controller
      */
     public function index()
     {
-        // 1 month
-        $seconds = 60 * 60 * 24 * 30;
+        // 1 day
+        $seconds = 86400;
 
         return Cache::remember('rangkingDefault', $seconds, function () {
 
@@ -169,7 +169,7 @@ class RankingController extends Controller
                 'hpd' => 'Hits Per Day',
                 'data_span' => $this->data_span,
                 'ranking' => $this->rankings,
-            ]);
+            ], Response::HTTP_OK);
         });
     }
 }
