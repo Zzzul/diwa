@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -217,7 +218,7 @@ class DistributionNewsController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/news/filter/distribution={name}&release={release}&month={month}&year={year}",
+     *     path="/api/filter/news",
      *     tags={"News"},
      *     summary="Get specific distribution news",
      *     description="If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
@@ -227,8 +228,8 @@ class DistributionNewsController extends Controller
      *          name="name",
      *          description="Distribution Name",
      *          required=true,
-     *          in="path",
-     *          example="mx",
+     *          in="query",
+     *          example="ubuntu",
      *          @OA\Schema(
      *              type="string"
      *          )
@@ -237,7 +238,7 @@ class DistributionNewsController extends Controller
      *          name="release",
      *          description="Release Version",
      *          required=true,
-     *          in="path",
+     *          in="query",
      *          example="stable",
      *          @OA\Schema(
      *              type="string"
@@ -247,7 +248,7 @@ class DistributionNewsController extends Controller
      *          name="month",
      *          description="Month",
      *          required=true,
-     *          in="path",
+     *          in="query",
      *          example="all",
      *          @OA\Schema(
      *              type="string"
@@ -257,7 +258,7 @@ class DistributionNewsController extends Controller
      *          name="year",
      *          description="Year",
      *          required=true,
-     *          in="path",
+     *          in="query",
      *          example="2021",
      *          @OA\Schema(
      *              type="integer"
@@ -265,14 +266,15 @@ class DistributionNewsController extends Controller
      *     ),
      * )
      */
-    public function filterNews() {
+    public function filterNews(Request $request)
+    {
         // i day
         $seocnds = 86400;
 
-        $distribution = request()->distribution ?? 'all';
-        $release = request()->release ?? 'all';
-        $month = request()->month ?? 'all';
-        $year = request()->year ?? 'all';
+        $distribution = $request->distribution ?? 'all';
+        $release = $request->release ?? 'all';
+        $month = $request->month ?? 'all';
+        $year = $request->year ?? 'all';
 
         $cache_name = Str::camel($distribution . ' ' . $release . ' ' . $month . ' ' . $year);
 

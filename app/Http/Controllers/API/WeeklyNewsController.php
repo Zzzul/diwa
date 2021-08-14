@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WeeklyNewsController extends Controller
 {
-    private $list = [];
+    private $lists = [];
     private $content = [];
     private $title = '';
     private $story = '';
@@ -39,7 +39,7 @@ class WeeklyNewsController extends Controller
 
             $crawler->filter('.List')->each(function ($node) {
                 $url = $node->filter('a')->link()->getUri();
-                $this->list[] = [
+                $this->lists[] = [
                     'distrowatch_weekly_detail_url' => $url,
                     'weekly_detail_url' => route("weekly.show", Str::after($url, '?issue=')),
                     'title' => Str::remove('• ', $node->text())
@@ -49,7 +49,7 @@ class WeeklyNewsController extends Controller
             return response()->json([
                 'message' => 'Success',
                 'status_code' => Response::HTTP_OK,
-                'list' => $this->list
+                'lists' => $this->lists
             ], Response::HTTP_OK);
         });
     }

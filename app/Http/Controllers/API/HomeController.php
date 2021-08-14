@@ -50,6 +50,12 @@ class HomeController extends Controller
                                 'note' => 'If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
                             ]
                         ],
+                        'search' => [
+                            'list_params' => route("params.search"),
+                            'url' => url('/api/search?ostype={os_type}&category={distribution_category}&origin={country_of_origin}&basedon={based_on}&notbasedon={not_based_on}&desktop={desktop_environment}&architecture={architecture}&package={package_manager}&rolling={release_model}&isosize={install_media_size}&netinstall={install_mehthod}&language={multi_language_support}&defaultinit={software_init}&status={status}#simple'),
+                            'example' => route("search.index", 'ostype=Linux&category=All&origin=All&basedon=All&notbasedon=Ubuntu&desktop=Xfce&architecture=All&package=All&rolling=All&isosize=All&netinstall=All&language=All&defaultinit=All&status=Active#simple'),
+                            'note' => 'If one of the {params} not found, distrowatch.com will used default params(All)'
+                        ]
                     ],
                     'news' => [
                         'distribution_news' => [
