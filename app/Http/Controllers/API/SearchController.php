@@ -143,7 +143,7 @@ class SearchController extends Controller
      *          description="Based on",
      *          required=true,
      *          in="query",
-     *          example="All",
+     *          example="Ubuntu",
      *          @OA\Schema(
      *              type="string"
      *          )
@@ -153,7 +153,7 @@ class SearchController extends Controller
      *          description="Not Based on",
      *          required=true,
      *          in="query",
-     *          example="Arch",
+     *          example="None",
      *          @OA\Schema(
      *              type="string"
      *          )

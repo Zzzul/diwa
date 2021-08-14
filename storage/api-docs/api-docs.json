@@ -297,7 +297,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "All"
+                        "example": "Ubuntu"
                     },
                     {
                         "name": "notbasedon",
@@ -307,7 +307,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "Arch"
+                        "example": "None"
                     },
                     {
                         "name": "desktop",
