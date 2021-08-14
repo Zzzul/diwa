@@ -96,7 +96,7 @@
                 }
             }
         },
-        "/api/news/filter/distribution={name}&release={release}&month={month}&year={year}": {
+        "/api/filter/news": {
             "get": {
                 "tags": [
                     "News"
@@ -107,17 +107,17 @@
                 "parameters": [
                     {
                         "name": "name",
-                        "in": "path",
+                        "in": "query",
                         "description": "Distribution Name",
                         "required": true,
                         "schema": {
                             "type": "string"
                         },
-                        "example": "mx"
+                        "example": "ubuntu"
                     },
                     {
                         "name": "release",
-                        "in": "path",
+                        "in": "query",
                         "description": "Release Version",
                         "required": true,
                         "schema": {
@@ -127,17 +127,17 @@
                     },
                     {
                         "name": "month",
-                        "in": "path",
+                        "in": "query",
                         "description": "Month",
                         "required": true,
                         "schema": {
                             "type": "string"
                         },
-                        "example": "april"
+                        "example": "all"
                     },
                     {
                         "name": "year",
-                        "in": "path",
+                        "in": "query",
                         "description": "Year",
                         "required": true,
                         "schema": {
@@ -227,6 +227,177 @@
                             "type": "string"
                         },
                         "example": "trending-1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/params/search": {
+            "get": {
+                "tags": [
+                    "Distribution"
+                ],
+                "summary": "Get all available parameters for search the distribution (below ↓)",
+                "operationId": "GetAllAvailableParametersForSearch",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/search": {
+            "get": {
+                "tags": [
+                    "Distribution"
+                ],
+                "summary": "Get specific distribution",
+                "description": "If one of the {params} not found/empty, distrowatch.com will used default params(All)",
+                "operationId": "FilterDistribution",
+                "parameters": [
+                    {
+                        "name": "ostype",
+                        "in": "query",
+                        "description": "OS Type",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Linux"
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Distribution Category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "origin",
+                        "in": "query",
+                        "description": "Country of Origin",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "basedon",
+                        "in": "query",
+                        "description": "Based on",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Ubuntu"
+                    },
+                    {
+                        "name": "notbasedon",
+                        "in": "query",
+                        "description": "Not Based on",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "None"
+                    },
+                    {
+                        "name": "desktop",
+                        "in": "query",
+                        "description": "Desktop Interface",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Xfce"
+                    },
+                    {
+                        "name": "architecture",
+                        "in": "query",
+                        "description": "Architecture",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "package",
+                        "in": "query",
+                        "description": "Package Management",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "rolling",
+                        "in": "query",
+                        "description": "Release Model",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "isosize",
+                        "in": "query",
+                        "description": "Install Media Size",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "netinstall",
+                        "in": "query",
+                        "description": "Install Method",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Multi Language Support",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "defaultinit",
+                        "in": "query",
+                        "description": "Init Sofrware",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "All"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Status",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Active"
                     }
                 ],
                 "responses": {
