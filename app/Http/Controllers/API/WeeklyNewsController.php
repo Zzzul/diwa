@@ -33,7 +33,7 @@ class WeeklyNewsController extends Controller
         return Cache::remember('allWeeklyNews', $seocnds, function () {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . 'weekly.php';
+            $url = config('app.distrowatch_url') . 'weekly.php';
 
             $crawler = $client->request('GET', $url);
 
@@ -83,7 +83,7 @@ class WeeklyNewsController extends Controller
         return Cache::remember('weeklyNews' . $id, $seocnds, function () use ($id) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "weekly.php?issue=$id";
+            $url = config('app.distrowatch_url') . "weekly.php?issue=$id";
 
             $crawler = $client->request('GET', $url);
 

@@ -50,7 +50,7 @@ class DistributionNewsController extends Controller
         return Cache::remember('allNews', $seocnds, function () {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL');
+            $url = config('app.distrowatch_url');
 
             $crawler = $client->request('GET', $url);
 
@@ -94,7 +94,7 @@ class DistributionNewsController extends Controller
         return Cache::remember('DistributionNews' . $id, $seocnds, function () use ($id) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "?newsid=$id";
+            $url = config('app.distrowatch_url') . "?newsid=$id";
 
             $crawler = $client->request('GET', $url);
 
@@ -108,7 +108,7 @@ class DistributionNewsController extends Controller
 
                 $this->headline = Str::remove('NEW • ', $headline);
 
-                $this->thumbnail = env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src');
+                $this->thumbnail = config('app.distrowatch_url') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src');
 
                 $this->distrowatch_distribution_detail_url = $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->link()->getUri();
 
@@ -180,7 +180,7 @@ class DistributionNewsController extends Controller
 
             // Screenshots
             $crawler->filter('.Info')->eq(31)->each(function ($node) {
-                $this->screenshots = env('DISTROWATCH_URL') . $node->filter('img')->attr('src');
+                $this->screenshots = config('app.distrowatch_url') . $node->filter('img')->attr('src');
             });
 
             // recent_related_news_and_releases
@@ -281,7 +281,7 @@ class DistributionNewsController extends Controller
         return Cache::remember($cache_name, $seocnds, function () use ($distribution, $release, $month, $year) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "?distribution=$distribution&release=$release&month=$month&year=$year";
+            $url = config('app.distrowatch_url') . "?distribution=$distribution&release=$release&month=$month&year=$year";
 
             $crawler = $client->request('GET', $url);
 
@@ -346,7 +346,7 @@ class DistributionNewsController extends Controller
                 'headline' => Str::remove('NEW • ', $headline),
                 'date' => $node->children()->filter('td')->text(),
 
-                'thumbnail' => env('DISTROWATCH_URL') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src'),
+                'thumbnail' => config('app.distrowatch_url') . $node->children()->filter('.NewsLogo')->filter('a')->eq(0)->children('img')->attr('src'),
 
                 'distrowatch_news_url' => $this->distrowatch_news_url,
                 'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,

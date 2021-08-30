@@ -42,7 +42,7 @@ class RankingController extends Controller
 
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL');
+            $url = config('app.distrowatch_url');
 
             $crawler = $client->request('GET', $url);
 
@@ -117,7 +117,7 @@ class RankingController extends Controller
         return Cache::remember($cache_name, $seconds, function () use ($slug) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "?dataspan=$slug";
+            $url = config('app.distrowatch_url') . "?dataspan=$slug";
 
             $crawler = $client->request('GET', $url);
 

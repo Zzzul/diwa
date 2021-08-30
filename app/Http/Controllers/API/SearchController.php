@@ -29,7 +29,7 @@ class SearchController extends Controller
 
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . 'search.php';
+            $url = config('app.distrowatch_url') . 'search.php';
 
             $crawler = $client->request('GET', $url);
 
@@ -303,7 +303,7 @@ class SearchController extends Controller
         ) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
+            $url = config('app.distrowatch_url') . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
 
             $crawler = $client->request('GET', $url);
 

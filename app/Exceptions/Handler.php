@@ -37,11 +37,13 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->renderable(function (NotFoundHttpException $e) {
-            return response()->json([
-                'message' => 'Endpoint not found.',
-                'status_code' => Response::HTTP_NOT_FOUND,
-                'home' => route("home")
-            ], Response::HTTP_NOT_FOUND);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'message' => 'Endpoint not found.',
+                    'status_code' => Response::HTTP_NOT_FOUND,
+                    'home' => route("home")
+                ], Response::HTTP_NOT_FOUND);
+            }
         });
     }
 }

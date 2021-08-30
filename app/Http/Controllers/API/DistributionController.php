@@ -59,7 +59,7 @@ class DistributionController extends Controller
 
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL');
+            $url = config('app.distrowatch_url');
 
             $crawler = $client->request('GET', $url);
 
@@ -68,7 +68,7 @@ class DistributionController extends Controller
                     $this->all_distribution[] = [
                         'slug' => $node->attr('value'),
                         'name' => $node->text(),
-                        'distrowatch_distribution_detail_url' => env('DISTROWATCH_URL') . $node->attr('value'),
+                        'distrowatch_distribution_detail_url' => config('app.distrowatch_url') . $node->attr('value'),
                         'distribution_detail_url' => route("distribution.show", $node->attr('value')),
                     ];
                 }
@@ -112,7 +112,7 @@ class DistributionController extends Controller
         return Cache::remember($cache_name, $seocnds, function () use ($slug) {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL') . "table.php?distribution=$slug";
+            $url = config('app.distrowatch_url') . "table.php?distribution=$slug";
 
             $crawler = $client->request('GET', $url);
 

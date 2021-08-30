@@ -28,7 +28,7 @@ class HomeController extends Controller
             return response()->json([
                 'message' => 'Success',
                 'status_code' => Response::HTTP_OK,
-                'source' => env('DISTROWATCH_URL'),
+                'source' => config('app.distrowatch_url'),
                 'docs' => url('/documentation'),
                 'repository' => 'https://github.com/Zzzul/diwa',
                 'endpoints' => [
