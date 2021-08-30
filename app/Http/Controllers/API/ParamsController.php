@@ -29,7 +29,7 @@ class ParamsController extends Controller
         return Cache::rememberForever('rankingParams',  function () {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL');
+            $url = config('app.distrowatch_url');
 
             $crawler = $client->request('GET', $url);
 
@@ -65,7 +65,7 @@ class ParamsController extends Controller
         return Cache::rememberForever('newsParams',  function () {
             $client = new Client();
 
-            $url = env('DISTROWATCH_URL');
+            $url = config('app.distrowatch_url');
 
             $crawler = $client->request('GET', $url);
 
