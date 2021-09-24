@@ -48,7 +48,6 @@ class WeeklyNewsController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
                 'lists' => $this->lists
             ], Response::HTTP_OK);
         });
@@ -104,8 +103,7 @@ class WeeklyNewsController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'issue' => [
+                'news' => [
                     'title' => $this->title,
                     'story' => $this->story,
                     'content' => $this->content
