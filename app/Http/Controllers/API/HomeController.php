@@ -27,10 +27,8 @@ class HomeController extends Controller
         return Cache::rememberForever('home',  function () {
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'source' => config('app.distrowatch_url'),
                 'docs' => url('/documentation'),
-                'repository' => 'https://github.com/Zzzul/diwa',
+                'source' => 'https://github.com/Zzzul/diwa',
                 'endpoints' => [
                     'distribution' => [
                         'all' => route("distribution.index"),

@@ -10,33 +10,33 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DistributionController extends Controller
 {
-    private $all_distribution = [];
-    private $based_on = [];
-    private $architecture = [];
-    private $category = [];
-    private $desktop = [];
-    private $documentation = [];
-    private $screenshots = [];
-    private $screencasts = [];
-    private $download_mirrors = [];
-    private $related_websites = [];
-    private $reviews = [];
-    private $where_to_buy_or_try = [];
-    private $recent_related_news_and_releases = [];
-    private $average_rating = [];
+    private array $all_distribution = [];
+    private array $based_on = [];
+    private array $architecture = [];
+    private array $category = [];
+    private array $desktop = [];
+    private array $documentation = [];
+    private array $screenshots = [];
+    private array $screencasts = [];
+    private array $download_mirrors = [];
+    private array $related_websites = [];
+    private array $reviews = [];
+    private array $where_to_buy_or_try = [];
+    private array $recent_related_news_and_releases = [];
 
-    private $distribution = '';
-    private $about = '';
-    private $last_update = '';
-    private $origin = '';
-    private $status = '';
-    private $popularity = '';
-    private $homepage = '';
-    private $user_forum = '';
-    private $alternative_user_forum = '';
-    private $os_type = '';
-    private $bug_tracker = '';
-    private $mailing_list = '';
+    private string $average_rating = '';
+    private string $distribution = '';
+    private string $about = '';
+    private string $last_update = '';
+    private string $origin = '';
+    private string $status = '';
+    private string $popularity = '';
+    private string $homepage = '';
+    private string $user_forum = '';
+    private string $alternative_user_forum = '';
+    private string $os_type = '';
+    private string $bug_tracker = '';
+    private string $mailing_list = '';
 
     /**
      * @OA\Get(
@@ -52,7 +52,6 @@ class DistributionController extends Controller
      *     description="API Endpoints of Distribution"
      * )
      */
-
     public function index()
     {
         return Cache::rememberForever('allDistribution', function () {
@@ -76,7 +75,6 @@ class DistributionController extends Controller
 
             return response()->json([
                 'message' => 'Success.',
-                'status_code' => Response::HTTP_OK,
                 'distributions' => $this->all_distribution
             ], Response::HTTP_OK);
         });
@@ -116,154 +114,269 @@ class DistributionController extends Controller
 
             $crawler = $client->request('GET', $url);
 
+            // Check for not found
             $node = $crawler->filter('h1')->eq(0);
 
             if (count($node) == 0) {
                 return response()->json([
                     'message' => 'distribution not found.',
-                    'status_code' => Response::HTTP_NOT_FOUND,
                     'home' => route("home")
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            $this->distribution = $node->text();
+            $filter_ul_element = $crawler->filter('ul');
 
-            $this->last_update = Str::remove('Last Update: ', $node->nextAll()->text());
-
-            // os type
-            $this->os_type = $crawler->filter('ul')->eq(1)->filter('li')->eq(0)->filter('a')->text();
-
-            // based on
-            $crawler->filter('ul')->eq(1)->filter('li')->eq(1)->filter('a')->each(function ($node) {
-                $this->based_on[] = Str::remove('Based on: ', $node->text());
-            });
-
-            // origin
-            $this->origin = $crawler->filter('ul')->eq(1)->filter('li')->eq(2)->filter('a')->text();
-
-            // architecture
-            $crawler->filter('ul')->eq(1)->filter('li')->eq(3)->filter('a')->each(function ($node) {
-                $this->architecture[] = Str::remove('Architecture: ', $node->text());
-            });
-
-            // desktop
-            $crawler->filter('ul')->eq(1)->filter('li')->eq(4)->filter('a')->each(function ($node) {
-                $this->desktop[] = Str::remove('Desktop: ', $node->text());
-            });
-
-            // Category
-            $crawler->filter('ul')->eq(1)->filter('li')->eq(5)->filter('a')->each(function ($node) {
-                $this->category[] = Str::remove('Category: ', $node->text());
-            });
-
-            // origin
-            $this->status = Str::remove('Status: ', $crawler->filter('ul')->eq(1)->filter('li')->eq(6)->text());
-
-            // popularity
-            $this->popularity = Str::remove('Popularity: ', $crawler->filter('ul')->eq(1)->filter('li')->eq(7)->text());
-
-            // about (soon)
-            $remove_ul_text = Str::remove($crawler->filter('.TablesTitle')->filter('ul')->text(), $crawler->filter('.TablesTitle')->text());
-
-            // fix about
-            $remove_popularity_text = Str::before($remove_ul_text, ' Popularity (hits per day)');
-
-            $this->about = Str::after($remove_popularity_text, ' UTC  ');
-
-            // summary
-            // homepage of distribution url
-            $this->homepage = $crawler->filter('.Background')->eq(1)->filter('a')->link()->getUri();
-
-            $this->mailing_list = Str::remove('Mailing Lists  ', $crawler->filter('.Background')->eq(2)->text());
-            Str::contains($this->mailing_list, '--') ? $this->mailing_list = '' : $this->mailing_list = $this->mailing_list;
-
-            // distribution user forum url
-            $this->user_forum = count($crawler->filter('.Background')->eq(3)->filter('a')) != 0 ? $crawler->filter('.Background')->eq(3)->filter('a')->link()->getUri() : '';
-
-            $this->alterbative_user_forum = $crawler->filter('.Background')->eq(4)->text();
-
-            $crawler->filter('.Background')->eq(5)->filter('a')->each(function ($node) {
-                $this->documentation[] = $node->text();
-            });
-
-            $crawler->filter('.Background')->eq(6)->filter('a')->each(function ($node) {
-                $this->screenshots[] = $node->link()->getUri();
-            });
-
-            $crawler->filter('.Background')->eq(7)->filter('a')->each(function ($node) {
-                $this->screencasts[] = $node->link()->getUri();
-            });
-
-            $crawler->filter('.Background')->eq(8)->filter('a')->each(function ($node) {
-                $this->download_mirrors[] = $node->link()->getUri();
-            });
-
-            $this->bug_tracker = Str::remove('Bug Tracker ', $crawler->filter('.Background')->eq(9)->text());
-            Str::contains($this->bug_tracker, '--') ? $this->bug_tracker = '' : $this->bug_tracker = $this->bug_tracker;
-
-            $crawler->filter('.Background')->eq(10)->filter('a')->each(function ($node) {
-                $this->related_websites[] = $node->link()->getUri();
-            });
-
-            $crawler->filter('.Background')->eq(11)->filter('a')->each(function ($node) {
-                $this->reviews[] = $node->link()->getUri();
-            });
-
-            if (count($crawler->filter('.Background')->eq(12)->filter('a')) != 0) {
-                $this->where_to_buy_or_try['url'] = $crawler->filter('.Background')->eq(12)->filter('a')->link()->getUri();
-                $this->where_to_buy_or_try['text'] = $crawler->filter('.Background')->eq(12)->filter('a')->text();
-            } else {
-                $this->where_to_buy_or_try['url'] =  '';
-                $this->where_to_buy_or_try['text'] = '';
-            }
-
-            // bug: manjaro dont show recent_related_news_and_releases
-            $crawler->filter('.Background')->eq(13)->filter('a')->each(function ($node) {
-                $this->recent_related_news_and_releases[] =  [
-                    'text' => $node->text(),
-                    'url' => $node->link()->getUri(),
-                ];
-            });
-
-            if (count($crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
-                $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html();
-            } else {
-                $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->html();
-            }
-
-            $this->average_rating = $skor . ' from ' . $crawler->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews';
-
-            // dd($this->average_rating);
+            $filter_background_class = $crawler->filter('.Background');
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'distribution' => $this->distribution,
-                'last_update' => $this->last_update,
-                'os_type' => $this->os_type,
-                'origin' => $this->origin,
-                'about' => $this->about,
-                'based_on' => $this->based_on,
-                'architecture' => $this->architecture,
-                'desktop' => $this->desktop,
-                'category' => $this->category,
-                'status' => $this->status,
-                'popularity' => $this->popularity,
-                'homepage' => $this->homepage,
-                'mailing_list' => $this->mailing_list,
-                'user_forum' => $this->user_forum,
-                'alternative_user_forum' => $this->alternative_user_forum,
-                'documentation' => $this->documentation,
-                'screenshots' => $this->screenshots,
-                'screencasts' => $this->screencasts,
-                'download_mirrors' => $this->download_mirrors,
-                'bug_tracker' => $this->bug_tracker,
-                'related_websites' => $this->related_websites,
-                'reviews' => $this->reviews,
-                'where_to_buy_or_try' => $this->where_to_buy_or_try,
-                'recent_related_news_and_releases' => $this->recent_related_news_and_releases,
-                'average_rating' => $this->average_rating,
+                'distribution' => $this->getDistributionName($node),
+                'last_update' => $this->getLastUpdate($node),
+                'os_type' => $this->getOsType($filter_ul_element),
+                'origin' => $this->getOrigin($filter_ul_element),
+                'about' =>  $this->getAboutText($crawler),
+                'based_on' => $this->getBasedOn($filter_ul_element),
+                'architecture' => $this->getArchitectures($filter_ul_element),
+                'desktop' => $this->getDesktopTypes($filter_ul_element),
+                'category' => $this->getCategories($filter_ul_element),
+                'status' => $this->getStatus($filter_ul_element),
+                'popularity' => $this->getPopularity($filter_ul_element),
+                'homepage' => $this->getHomepageUrl($filter_background_class),
+                'mailing_list' => $this->getMailingList($filter_background_class),
+                'user_forum' => $this->getUserForumUrl($filter_background_class),
+                'alternative_user_forum' => $this->getAlternativeUserForum($filter_background_class),
+                'documentation' => $this->getDocumentation($filter_background_class),
+                'screenshots' => $this->getScreenshots($filter_background_class),
+                'screencasts' => $this->getScreencasts($filter_background_class),
+                'download_mirrors' => $this->getDownloadMirrorLinks($filter_background_class),
+                'bug_tracker' => $this->getBugTrackerLinks($filter_background_class),
+                'related_websites' => $this->getRelatedWebsites($filter_background_class),
+                'reviews' => $this->getReviews($filter_background_class),
+                'where_to_buy_or_try' => $this->checkWhereToBuy($filter_background_class),
+                'recent_related_news_and_releases' => $this->recentRelatedNewsAndReleases($filter_background_class),
+                'average_rating' => $this->checkSkorAndAverageRating($crawler),
             ], Response::HTTP_OK);
         });
+    }
+
+    private function getDistributionName($node)
+    {
+        $this->distribution = $node->text();
+
+        return $this->distribution;
+    }
+
+    private function getOsType($filter_ul_element)
+    {
+        $this->os_type = $filter_ul_element->eq(1)->filter('li')->eq(0)->filter('a')->text();
+
+        return $this->os_type;
+    }
+
+    private function getLastUpdate($node)
+    {
+        $this->last_update = Str::remove('Last Update: ', $node->nextAll()->text());
+
+        return $this->last_update;
+    }
+
+    private function getAboutText($crawler)
+    {
+        $remove_ul_text = Str::remove($crawler->filter('.TablesTitle')->filter('ul')->text(), $crawler->filter('.TablesTitle')->text());
+
+        $remove_popularity_text = Str::before($remove_ul_text, ' Popularity (hits per day)');
+
+        $this->about = Str::after($remove_popularity_text, ' UTC  ');
+
+        return $this->about;
+    }
+
+    private function getBasedOn($filter_ul_element)
+    {
+        $filter_ul_element->eq(1)->filter('li')->eq(1)->filter('a')->each(function ($node) {
+            $this->based_on[] = Str::remove('Based on: ', $node->text());
+        });
+
+        return $this->based_on;
+    }
+
+    private function getOrigin($filter_ul_element)
+    {
+        $this->origin = $filter_ul_element->eq(1)->filter('li')->eq(2)->filter('a')->text();
+
+        return $this->origin;
+    }
+
+    private function getArchitectures($filter_ul_element)
+    {
+        $filter_ul_element->eq(1)->filter('li')->eq(3)->filter('a')->each(function ($node) {
+            $this->architecture[] = Str::remove('Architecture: ', $node->text());
+        });
+
+        return $this->architecture;
+    }
+
+    private function getDesktopTypes($filter_ul_element)
+    {
+        $filter_ul_element->eq(1)->filter('li')->eq(4)->filter('a')->each(function ($node) {
+            $this->desktop[] = Str::remove('Desktop: ', $node->text());
+        });
+
+        return $this->desktop;
+    }
+
+    private function getCategories($filter_ul_element)
+    {
+        $filter_ul_element->eq(1)->filter('li')->eq(5)->filter('a')->each(function ($node) {
+            $this->category[] = Str::remove('Category: ', $node->text());
+        });
+
+        return $this->category;
+    }
+
+    private function getStatus($filter_ul_element)
+    {
+        $this->status = Str::remove('Status: ', $filter_ul_element->eq(1)->filter('li')->eq(6)->text());
+
+        return $this->status;
+    }
+
+    private function getPopularity($filter_ul_element)
+    {
+        $this->popularity = Str::remove('Popularity: ', $filter_ul_element->eq(1)->filter('li')->eq(7)->text());
+
+        return $this->popularity;
+    }
+
+    private function getHomepageUrl($filter_background_class)
+    {
+        $this->homepage = $filter_background_class->eq(1)->filter('a')->link()->getUri();
+        return $this->homepage;
+    }
+
+    private function getMailingList($filter_background_class)
+    {
+        $filter_text = Str::remove('Mailing Lists  ', $filter_background_class->eq(2)->text());
+
+        $this->mailing_list = Str::contains($filter_text, '--') ? $this->mailing_list = '' : $this->mailing_list = $filter_text;
+
+        return $this->mailing_list;
+    }
+
+    private function getUserForumUrl($filter_background_class)
+    {
+        $this->user_forum = count($filter_background_class->eq(3)->filter('a')) != 0 ?
+            $filter_background_class->eq(3)->filter('a')->link()->getUri() : '';
+
+        return $this->user_forum;
+    }
+
+    private function getAlternativeUserForum($filter_background_class)
+    {
+        $this->alternative_user_forum = $filter_background_class->eq(4)->text();
+
+        return $this->alternative_user_forum;
+    }
+
+    private function getDocumentation($filter_background_class)
+    {
+        $filter_background_class->eq(5)->filter('a')->each(function ($node) {
+            $this->documentation[] = $node->text();
+        });
+
+        return $this->documentation;
+    }
+
+    private function getScreenshots($filter_background_class)
+    {
+        $filter_background_class->eq(6)->filter('a')->each(function ($node) {
+            $this->screenshots[] = $node->link()->getUri();
+        });
+
+        return $this->screenshots;
+    }
+
+    private function getScreencasts($filter_background_class)
+    {
+        $filter_background_class->eq(7)->filter('a')->each(function ($node) {
+            $this->screencasts[] = $node->link()->getUri();
+        });
+
+        return $this->screencasts;
+    }
+
+    private function getDownloadMirrorLinks($filter_background_class)
+    {
+        $filter_background_class->eq(8)->filter('a')->each(function ($node) {
+            $this->download_mirrors[] = $node->link()->getUri();
+        });
+
+        return $this->download_mirrors;
+    }
+
+    private function getBugTrackerLinks($filter_background_class)
+    {
+        $filter_text = Str::remove('Bug Tracker ', $filter_background_class->eq(9)->text());
+
+        $this->bug_tracker = Str::contains($filter_text, '--') ? $this->bug_tracker = '' : $this->bug_tracker = $filter_text;
+
+        return $this->bug_tracker;
+    }
+
+    private function getRelatedWebsites($filter_background_class)
+    {
+        $filter_background_class->eq(10)->filter('a')->each(function ($node) {
+            $this->related_websites[] = $node->link()->getUri();
+        });
+
+        return $this->related_websites;
+    }
+
+    private function getReviews($filter_background_class)
+    {
+        $filter_background_class->eq(11)->filter('a')->each(function ($node) {
+            $this->reviews[] = $node->link()->getUri();
+        });
+
+        return $this->reviews;
+    }
+
+    /* Check the skor if exists to anticipate an error */
+    private function checkSkorAndAverageRating($crawler)
+    {
+        if (count($crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
+            $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html();
+        } else {
+            $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->html();
+        }
+
+        $this->average_rating = $skor . ' from ' . $crawler->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews';
+
+        return $this->average_rating;
+    }
+
+    /* Check the where to buy or try if exists to anticipate an error */
+    private function checkWhereToBuy($filter_background_class)
+    {
+        if (count($filter_background_class->eq(12)->filter('a')) != 0) {
+            $this->where_to_buy_or_try['url'] = $filter_background_class->eq(12)->filter('a')->link()->getUri();
+            $this->where_to_buy_or_try['text'] = $filter_background_class->eq(12)->filter('a')->text();
+        } else {
+            $this->where_to_buy_or_try['url'] =  '';
+            $this->where_to_buy_or_try['text'] = '';
+        }
+    }
+
+    private function recentRelatedNewsAndReleases($filter_background_class)
+    {
+        // bug: manjaro and some distro dont show recent_related_news_and_releases
+        $filter_background_class->filter('.Background')->eq(13)->filter('a')->each(function ($node) {
+            $this->recent_related_news_and_releases[] =  [
+                'text' => $node->text(),
+                'url' => $node->link()->getUri(),
+            ];
+        });
+
+        return $this->recent_related_news_and_releases;
     }
 }

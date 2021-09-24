@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SearchController extends Controller
 {
-    private $params = [];
-    private $os = [];
+    private array $params = [];
+    private array $lists = [];
 
     /**
      * @OA\Get(
@@ -33,72 +33,14 @@ class SearchController extends Controller
 
             $crawler = $client->request('GET', $url);
 
-            $select = $crawler->filter('.NewsText')->filter('table')->filter('select');
-
-            $select->eq(0)->children()->each(function ($node) {
-                $this->params['os_type'][] = $node->attr('value');
-            });
-
-            $select->eq(1)->children()->each(function ($node) {
-                $this->params['distribution_category'][] = $node->attr('value');
-            });
-
-            $select->eq(2)->children()->each(function ($node) {
-                $this->params['country_of_origin'][] = $node->attr('value');
-            });
-
-            $select->eq(3)->children()->each(function ($node) {
-                $this->params['based_on'][] = $node->attr('value');
-            });
-
-            $select->eq(4)->children()->each(function ($node) {
-                $this->params['not_based_on'][] = $node->attr('value');
-            });
-
-            $select->eq(5)->children()->each(function ($node) {
-                $this->params['desktop_environment'][] = $node->attr('value');
-            });
-
-            $select->eq(6)->children()->each(function ($node) {
-                $this->params['architecture'][] = $node->attr('value');
-            });
-
-            $select->eq(7)->children()->each(function ($node) {
-                $this->params['package_management'][] = $node->attr('value');
-            });
-
-            $select->eq(8)->children()->each(function ($node) {
-                $this->params['release_model'][] = $node->attr('value');
-            });
-
-            $select->eq(9)->children()->each(function ($node) {
-                $this->params['install_media_size'][] = $node->attr('value');
-            });
-
-            $select->eq(10)->children()->each(function ($node) {
-                $this->params['install_method'][] = $node->attr('value');
-            });
-
-            $select->eq(11)->children()->each(function ($node) {
-                $this->params['multi_language_support'][] = $node->attr('value');
-            });
-
-            $select->eq(12)->children()->each(function ($node) {
-                $this->params['init_software'][] = $node->attr('value');
-            });
-
-            $select->eq(13)->children()->each(function ($node) {
-                $this->params['status'][] = $node->attr('value');
-            });
+            $filter_select_element = $crawler->filter('.NewsText')->filter('table')->filter('select');
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'params' => $this->params,
+                'params' => $this->getAllValueForParams($filter_select_element),
             ], Response::HTTP_OK);
         });
     }
-
 
     /**
      * @OA\Get(
@@ -324,7 +266,7 @@ class SearchController extends Controller
 
                     $url = $node->filter('a')->link()->getUri();
 
-                    $this->os[] = [
+                    $this->lists[] = [
                         'distribution' => $node->filter('a')->text(),
                         'distrowatch_distribution_detail_url' => $url,
                         // get string after https://distrowatch.com/
@@ -337,9 +279,69 @@ class SearchController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'os' => $this->os,
+                'lists' => $this->lists,
             ], Response::HTTP_OK);
         });
+    }
+
+    private function getAllValueForParams($filter_select_element)
+    {
+        $filter_select_element->eq(0)->children()->each(function ($node) {
+            $this->params['os_type'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(1)->children()->each(function ($node) {
+            $this->params['distribution_category'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(2)->children()->each(function ($node) {
+            $this->params['country_of_origin'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(3)->children()->each(function ($node) {
+            $this->params['based_on'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(4)->children()->each(function ($node) {
+            $this->params['not_based_on'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(5)->children()->each(function ($node) {
+            $this->params['desktop_environment'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(6)->children()->each(function ($node) {
+            $this->params['architecture'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(7)->children()->each(function ($node) {
+            $this->params['package_management'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(8)->children()->each(function ($node) {
+            $this->params['release_model'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(9)->children()->each(function ($node) {
+            $this->params['install_media_size'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(10)->children()->each(function ($node) {
+            $this->params['install_method'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(11)->children()->each(function ($node) {
+            $this->params['multi_language_support'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(12)->children()->each(function ($node) {
+            $this->params['init_software'][] = $node->attr('value');
+        });
+
+        $filter_select_element->eq(13)->children()->each(function ($node) {
+            $this->params['status'][] = $node->attr('value');
+        });
+
+        return $this->params;
     }
 }

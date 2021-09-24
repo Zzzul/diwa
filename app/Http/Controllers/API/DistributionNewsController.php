@@ -11,21 +11,22 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DistributionNewsController extends Controller
 {
-    private $news = [];
-    private $body = [];
-    private $recent_related_news_and_releases = [];
-    private $distribution_summary = [];
-    private $about = '';
-    private $screenshots = '';
-    private $distrowatch_url_news = '';
-    private $headline = '';
-    private $thumbnail = '';
-    private $date = '';
-    private $distribution_detail_url = '';
-    private $news_detail_url = '';
-    private $distrowatch_distribution_detail_url = '';
-    private $distrowatch_news_url = '';
-    private $sponsor = false;
+    private array $news = [];
+    private array $body = [];
+    private array $recent_related_news_and_releases = [];
+    private array $distribution_summary = [];
+
+    private string $about = '';
+    private string $screenshots = '';
+    private string $distrowatch_news_url = '';
+    private string $headline = '';
+    private string $thumbnail = '';
+    private string $date = '';
+    private string $distribution_detail_url = '';
+    private string $news_detail_url = '';
+    private string $distrowatch_distribution_detail_url = '';
+
+    private bool $sponsor = false;
 
     /**
      * @OA\Get(
@@ -60,7 +61,7 @@ class DistributionNewsController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
+
                 'news' => $this->news
             ], Response::HTTP_OK);
         });
@@ -98,11 +99,10 @@ class DistributionNewsController extends Controller
 
             $crawler = $client->request('GET', $url);
 
-            // body
             $crawler->filter('.News1 > table')->eq(1)->each(function ($node) {
                 $headline = $node->children()->filter('td')->nextAll()->text();
 
-                $this->distrowatch_url_news = $node->children()->filter('td')->nextAll()->filter('a')->eq(1)->link()->getUri();
+                $this->distrowatch_news_url = $node->children()->filter('td')->nextAll()->filter('a')->eq(1)->link()->getUri();
 
                 $this->date = $node->children()->filter('td')->text();
 
@@ -117,89 +117,24 @@ class DistributionNewsController extends Controller
                     'html' => $node->children()->filter('.NewsText')->html()
                 ];
             });
-            // end of body
 
-            // about
-            $crawler->filter('.Background > td')->eq(1)->each(function ($node) {
-                $this->about = $node->text();
-            });
+            $filter_td_element = $crawler->filter('.Background > td');
 
-            // distribution_summary
-            $summary = $crawler->filter('.Info')->eq(4)->filter('.Info');
-            $this->distribution_summary['distribution'] = $summary->eq(2)->text();
+            $filter_info_class_element = $crawler->filter('.Info');
 
-            $this->distribution_summary['home_page'] = $summary->eq(4)->text();
+            $this->about = $this->getAboutText($filter_td_element);
 
-            $this->distribution_summary['mailing_lists'] = $summary->eq(6)->text() != '--' ? $summary->eq(6)->text() : '';
+            $this->distribution_summary = $this->getAllValueForDistributionSummary($filter_info_class_element->eq(4)->filter('.Info'));
 
-            $this->distribution_summary['user_forum'] = $summary->eq(8)->text() != '--' ? $summary->eq(8)->text() : '';
+            $this->screenshots = $this->getScreenshot($filter_info_class_element);
 
-            $this->distribution_summary['alternative_user_forum'] = $summary->eq(10)->text() != '--' ? $summary->eq(10)->text() : '';
+            $this->recent_related_news_and_releases = $this->getRecentRelatedNews($filter_td_element);
 
-            $summary->eq(12)->filter('a')->each(function ($node) {
-                $this->distribution_summary['documentation'][] = $node->link()->getUri();
-            });
-
-            $summary->eq(14)->filter('a')->each(function ($node) {
-                $this->distribution_summary['gallery'][] = $node->link()->getUri();
-            });
-
-            $summary->eq(16)->filter('a')->each(function ($node) {
-                if (count($node) > 0) {
-                    $this->distribution_summary['screencasts'][] = $node->link()->getUri();
-                } else {
-                    $this->distribution_summary['screencasts'] = '';
-                }
-            });
-
-            $summary->eq(18)->filter('a')->each(function ($node) {
-                if (count($node) > 0) {
-                    $this->distribution_summary['download_mirrors'][] = $node->link()->getUri();
-                } else {
-                    $this->distribution_summary['download_mirrors'] = '';
-                }
-            });
-
-            $this->distribution_summary['bug_tracker'] = $summary->eq(20)->filter('a')->link()->getUri();
-
-            $summary->eq(22)->filter('a')->each(function ($node) {
-                $this->distribution_summary['related_websites'][] = $node->link()->getUri();
-            });
-
-            $summary->eq(24)->filter('a')->each(function ($node) {
-                $this->distribution_summary['reviews'][] = $node->link()->getUri();
-            });
-
-            if (count($summary->eq(26)->filter('a')) > 0) {
-                $this->distribution_summary['where_to_buy']['text'] = $summary->eq(26)->filter('a')->text();
-                $this->distribution_summary['where_to_buy']['url'] = $summary->eq(26)->filter('a')->link()->getUri();
-            } else {
-                $this->distribution_summary['where_to_buy'] = '';
-            }
-            // end of summary
-
-            // Screenshots
-            $crawler->filter('.Info')->eq(31)->each(function ($node) {
-                $this->screenshots = config('app.distrowatch_url') . $node->filter('img')->attr('src');
-            });
-
-            // recent_related_news_and_releases
-            $crawler->filter('.Background > td')->eq(0)->each(function ($node) {
-                $node->filter('a')->each(function ($item, $i) {
-                    $this->recent_related_news_and_releases[] = [
-                        'text' => $item->text(),
-                        'url' => $item->link()->getUri()
-                    ];
-                });
-            });
-            // end of recent_related_news_and_releases
-
-            $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+            $this->distribution_detail_url = $this->getDistributionDetailUrl();
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
-                'distrowatch_news_url' => $this->distrowatch_url_news,
+                'distrowatch_news_url' => $this->distrowatch_news_url,
                 'distrowatch_distribution_detail_url' => $this->distrowatch_distribution_detail_url,
                 'distribution_detail_url' => $this->distribution_detail_url,
                 'news_detail' => [
@@ -291,7 +226,7 @@ class DistributionNewsController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
+
                 'news' => $this->news
             ], Response::HTTP_OK);
         });
@@ -300,7 +235,7 @@ class DistributionNewsController extends Controller
     /**
      * Scrap datas used DOM (for index and show method)
      */
-    public function getNewsData($node, $i)
+    private function getNewsData($node, $i)
     {
         if ($i >= 1) {
             $headline = $node->children()->filter('td')->nextAll()->text();
@@ -358,5 +293,100 @@ class DistributionNewsController extends Controller
                 'sponsor' => $this->sponsor
             ];
         }
+    }
+
+    private function getAllValueForDistributionSummary($summary)
+    {
+        $this->distribution_summary['distribution'] = $summary->eq(2)->text();
+
+        $this->distribution_summary['home_page'] = $summary->eq(4)->text();
+
+        $this->distribution_summary['mailing_lists'] = $summary->eq(6)->text() != '--' ? $summary->eq(6)->text() : '';
+
+        $this->distribution_summary['user_forum'] = $summary->eq(8)->text() != '--' ? $summary->eq(8)->text() : '';
+
+        $this->distribution_summary['alternative_user_forum'] = $summary->eq(10)->text() != '--' ? $summary->eq(10)->text() : '';
+
+        $summary->eq(12)->filter('a')->each(function ($node) {
+            $this->distribution_summary['documentation'][] = $node->link()->getUri();
+        });
+
+        $summary->eq(14)->filter('a')->each(function ($node) {
+            $this->distribution_summary['gallery'][] = $node->link()->getUri();
+        });
+
+        $summary->eq(16)->filter('a')->each(function ($node) {
+            if (count($node) > 0) {
+                $this->distribution_summary['screencasts'][] = $node->link()->getUri();
+            } else {
+                $this->distribution_summary['screencasts'] = '';
+            }
+        });
+
+        $summary->eq(18)->filter('a')->each(function ($node) {
+            if (count($node) > 0) {
+                $this->distribution_summary['download_mirrors'][] = $node->link()->getUri();
+            } else {
+                $this->distribution_summary['download_mirrors'] = '';
+            }
+        });
+
+        $this->distribution_summary['bug_tracker'] = $summary->eq(20)->filter('a')->link()->getUri();
+
+        $summary->eq(22)->filter('a')->each(function ($node) {
+            $this->distribution_summary['related_websites'][] = $node->link()->getUri();
+        });
+
+        $summary->eq(24)->filter('a')->each(function ($node) {
+            $this->distribution_summary['reviews'][] = $node->link()->getUri();
+        });
+
+        if (count($summary->eq(26)->filter('a')) > 0) {
+            $this->distribution_summary['where_to_buy']['text'] = $summary->eq(26)->filter('a')->text();
+            $this->distribution_summary['where_to_buy']['url'] = $summary->eq(26)->filter('a')->link()->getUri();
+        } else {
+            $this->distribution_summary['where_to_buy'] = '';
+        }
+
+        return $this->distribution_summary;
+    }
+
+    private function getScreenshot($filter_info_class_element)
+    {
+        $filter_info_class_element->eq(31)->each(function ($node) {
+            $this->screenshots = config('app.distrowatch_url') . $node->filter('img')->attr('src');
+        });
+
+        return $this->screenshots;
+    }
+
+    private function getRecentRelatedNews($filter_td_element)
+    {
+        $filter_td_element->eq(0)->each(function ($node) {
+            $node->filter('a')->each(function ($item, $i) {
+                $this->recent_related_news_and_releases[] = [
+                    'text' => $item->text(),
+                    'url' => $item->link()->getUri()
+                ];
+            });
+        });
+
+        return $this->recent_related_news_and_releases;
+    }
+
+    private function getDistributionDetailUrl()
+    {
+        $this->distribution_detail_url = route("distribution.show", Str::remove('https://distrowatch.com/', $this->distrowatch_distribution_detail_url));
+
+        return $this->distribution_detail_url;
+    }
+
+    private function getAboutText($filter_td_element)
+    {
+        $filter_td_element->eq(1)->each(function ($node) {
+            $this->about = $node->text();
+        });
+
+        return $this->about;
     }
 }
