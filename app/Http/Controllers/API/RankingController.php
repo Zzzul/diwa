@@ -79,11 +79,10 @@ class RankingController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
                 'hpd' => 'Hits Per Day',
                 'data_span' => 'Last 6 months',
                 'rankings' => $this->rankings
-            ]);
+            ], Response::HTTP_OK);
         });
     }
 
@@ -165,7 +164,6 @@ class RankingController extends Controller
 
             return response()->json([
                 'message' => 'Success',
-                'status_code' => Response::HTTP_OK,
                 'hpd' => 'Hits Per Day',
                 'data_span' => $this->data_span,
                 'ranking' => $this->rankings,

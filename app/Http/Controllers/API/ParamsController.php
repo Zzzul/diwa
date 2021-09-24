@@ -44,7 +44,7 @@ class ParamsController extends Controller
             });
 
             return response()->json([
-                'message' => 'Success.',
+                'message' => 'Success',
                 'params' => $this->distribution
             ], Response::HTTP_OK);
         });
@@ -71,7 +71,7 @@ class ParamsController extends Controller
             $filter_select_element = $crawler->filter('.Introduction')->filter('select');
 
             return response()->json([
-                'message' => 'Success.',
+                'message' => 'Success',
                 'params' => [
                     'distribution' => $this->getDistributions($filter_select_element),
                     'release' => $this->getRelease($filter_select_element),
