@@ -10,10 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ParamsController extends Controller
 {
-    private $distribution = [];
-    private $release = [];
-    private $year = [];
-    private $month = [];
+    private array $distribution = [];
+    private array $release = [];
+    private array $year = [];
+    private array $month = [];
 
     /**
      * @OA\Get(
@@ -45,7 +45,6 @@ class ParamsController extends Controller
 
             return response()->json([
                 'message' => 'Success.',
-                'status_code' => Response::HTTP_OK,
                 'params' => $this->distribution
             ], Response::HTTP_OK);
         });
@@ -69,48 +68,66 @@ class ParamsController extends Controller
 
             $crawler = $client->request('GET', $url);
 
-            // All distribution
-            $crawler->filter('.Introduction')->filter('select')->eq(0)->filter('option')->each(function ($node) {
-                $this->distribution[] = [
-                    'slug' => $node->attr('value'),
-                    'text' => $node->text(),
-                ];
-            });
-
-            // Year
-            $crawler->filter('.Introduction')->filter('select')->eq(1)->filter('option')->each(function ($node) {
-                $this->release[] = [
-                    'slug' => $node->attr('value'),
-                    'text' => $node->text(),
-                ];
-            });
-
-            // Months
-            $crawler->filter('.Introduction')->filter('select')->eq(2)->filter('option')->each(function ($node) {
-                $this->month[] = [
-                    'slug' => $node->attr('value'),
-                    'text' => $node->text(),
-                ];
-            });
-
-            // Years
-            $crawler->filter('.Introduction')->filter('select')->eq(3)->filter('option')->each(function ($node) {
-                $this->year[] = [
-                    'slug' => $node->attr('value'),
-                    'text' => $node->text(),
-                ];
-            });
+            $filter_select_element = $crawler->filter('.Introduction')->filter('select');
 
             return response()->json([
                 'message' => 'Success.',
-                'status_code' => Response::HTTP_OK,
                 'params' => [
-                    'distribution' => $this->distribution,
-                    'release' => $this->release,
-                    'month' => $this->month,
-                    'year' => $this->year,
+                    'distribution' => $this->getDistributions($filter_select_element),
+                    'release' => $this->getRelease($filter_select_element),
+                    'month' => $this->getMonths($filter_select_element),
+                    'year' => $this->getYears($filter_select_element),
                 ]
             ], Response::HTTP_OK);
         });
+    }
+
+
+    private function getDistributions($filter_select_element)
+    {
+        $filter_select_element->eq(0)->filter('option')->each(function ($node) {
+            $this->distribution[] = [
+                'slug' => $node->attr('value'),
+                'text' => $node->text(),
+            ];
+        });
+
+        return $this->distribution;
+    }
+
+    private function getRelease($filter_select_element)
+    {
+        $filter_select_element->eq(1)->filter('option')->each(function ($node) {
+            $this->release[] = [
+                'slug' => $node->attr('value'),
+                'text' => $node->text(),
+            ];
+        });
+
+        return $this->release;
+    }
+
+    private function getMonths($filter_select_element)
+    {
+        $filter_select_element->eq(2)->filter('option')->each(function ($node) {
+            $this->month[] = [
+                'slug' => $node->attr('value'),
+                'text' => $node->text(),
+            ];
+        });
+
+        return $this->month;
+    }
+
+    private function getYears($filter_select_element)
+    {
+        $filter_select_element->eq(3)->filter('option')->each(function ($node) {
+            $this->year[] = [
+                'slug' => $node->attr('value'),
+                'text' => $node->text(),
+            ];
+        });
+
+        return  $this->year;
     }
 }
