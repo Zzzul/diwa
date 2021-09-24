@@ -3,10 +3,10 @@
 </div>
 
 # Demo 
-[Demo!](http://diwa.herokuapp.com/api)
+[Demo!](https://diwa.herokuapp.com/api)
 
 # Docs 
-[Docs!](http://diwa.herokuapp.com/documentation)
+[Docs!](https://diwa.herokuapp.com/documentation)
 
 # Description
 Diwa is an open source project and simple unofficail API from [Distrowatch](https://distrowatch.com/) site to get some public data of open source system operation like Linux, BSD, etc. for the routes, you can see it below.

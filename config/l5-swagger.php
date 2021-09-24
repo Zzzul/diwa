@@ -5,7 +5,7 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'Diwa: Unofficial Distrowatch API',
+                'title' => 'Diwa: Unofficial Simple API from Distrowatch.com',
             ],
 
             'routes' => [

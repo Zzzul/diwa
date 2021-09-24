@@ -13,9 +13,9 @@ class Controller extends BaseController
      * @OA\Info(
      *      version="1.0.0",
      *      title="Diwa",
-     *      description="Unofficiall Distrowatch API",
+     *      description="Diwa is an unofficial simple API from [distrowatch.com](https://distrowatch.com/)",
      *      @OA\Contact(
-     *          email="807fahmi@gmail.com"
+     *          email="mzulfahmi807@gmail.com"
      *      ),
      *      @OA\License(
      *          name="MIT",
