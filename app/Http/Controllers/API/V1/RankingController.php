@@ -1,23 +1,40 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Carbon\Carbon;
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class RankingController extends Controller
 {
-    private $rankings = [];
-    private $distrowatch_distribution_detail_url = '';
-    private $distribution_detail_url = '';
-    private $alt = '';
-    private $image = '';
-    private $status = '';
-    private $data_span = '';
+    protected $rankings = [];
+    protected $distrowatch_distribution_detail_url = '';
+    protected $distribution_detail_url = '';
+    protected $alt = '';
+    protected $image = '';
+    protected $status = '';
+    protected $data_span = '';
+
+    /**
+     * @var client
+     */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
 
     /**
      * @OA\Get(
@@ -35,18 +52,10 @@ class RankingController extends Controller
      */
     public function index()
     {
-        // 1 day
-        $seconds = 86400;
+        return Cache::remember('rangkingDefault', 86400, function () {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
-        return Cache::remember('rangkingDefault', $seconds, function () {
-
-            $client = new Client();
-
-            $url = config('app.distrowatch_url');
-
-            $crawler = $client->request('GET', $url);
-
-            $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+            $crawler->filter('.phr2')->each(function ($node, $i) {
 
                 $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
 
@@ -58,7 +67,7 @@ class RankingController extends Controller
                     $this->status = ($this->alt == '<')
                         ? 'adown' : (($this->alt == '>')
                             ? 'aup' : 'alevel');
-                    $this->image = $url . $hpd->attr('src');
+                    $this->image = $this->baseUrl . $hpd->attr('src');
                 }
 
                 $this->rankings[] = [
@@ -108,17 +117,10 @@ class RankingController extends Controller
      */
     public function show($slug)
     {
-        // 1 day
-        $seconds = 86400;
-
         $cache_name = Str::camel('ranking ' . $slug);
 
-        return Cache::remember($cache_name, $seconds, function () use ($slug) {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . "?dataspan=$slug";
-
-            $crawler = $client->request('GET', $url);
+        return Cache::remember($cache_name, 86400, function () use ($slug) {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . "?dataspan=$slug");
 
             $crawler->filter('select')->eq(5)->children()->each(function ($node) use ($slug) {
                 if ($node->attr('value') == $slug) {
@@ -129,7 +131,7 @@ class RankingController extends Controller
             // dd($this->data_span);
             $this->data_span != '' ? $this->data_span = $this->data_span : $this->data_span = 'Last 6 months';
 
-            $crawler->filter('.phr2')->each(function ($node, $i) use ($url) {
+            $crawler->filter('.phr2')->each(function ($node, $i) {
 
                 $this->distrowatch_distribution_detail_url =  $node->filter('a')->link()->getUri();
 
@@ -141,7 +143,7 @@ class RankingController extends Controller
                     $this->status = ($this->alt == '<')
                         ? 'adown' : (($this->alt == '>')
                             ? 'aup' : 'alevel');
-                    $this->image = $url . $hpd->attr('src');
+                    $this->image = $this->baseUrl . $hpd->attr('src');
                 }
 
                 $this->alt = count($node->nextAll()->filter('img')) > 0 ? $node->nextAll()->filter('img')->attr('alt') : '';

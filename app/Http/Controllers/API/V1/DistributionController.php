@@ -1,42 +1,59 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class DistributionController extends Controller
 {
-    private array $all_distribution = [];
-    private array $based_on = [];
-    private array $architecture = [];
-    private array $category = [];
-    private array $desktop = [];
-    private array $documentation = [];
-    private array $screenshots = [];
-    private array $screencasts = [];
-    private array $download_mirrors = [];
-    private array $related_websites = [];
-    private array $reviews = [];
-    private array $where_to_buy_or_try = [];
-    private array $recent_related_news_and_releases = [];
+    protected array $all_distribution = [];
+    protected array $based_on = [];
+    protected array $architecture = [];
+    protected array $category = [];
+    protected array $desktop = [];
+    protected array $documentation = [];
+    protected array $screenshots = [];
+    protected array $screencasts = [];
+    protected array $download_mirrors = [];
+    protected array $related_websites = [];
+    protected array $reviews = [];
+    protected array $where_to_buy_or_try = [];
+    protected array $recent_related_news_and_releases = [];
 
-    private string $average_rating = '';
-    private string $distribution = '';
-    private string $about = '';
-    private string $last_update = '';
-    private string $origin = '';
-    private string $status = '';
-    private string $popularity = '';
-    private string $homepage = '';
-    private string $user_forum = '';
-    private string $alternative_user_forum = '';
-    private string $os_type = '';
-    private string $bug_tracker = '';
-    private string $mailing_list = '';
+    protected string $average_rating = '';
+    protected string $distribution = '';
+    protected string $about = '';
+    protected string $last_update = '';
+    protected string $origin = '';
+    protected string $status = '';
+    protected string $popularity = '';
+    protected string $homepage = '';
+    protected string $user_forum = '';
+    protected string $alternative_user_forum = '';
+    protected string $os_type = '';
+    protected string $bug_tracker = '';
+    protected string $mailing_list = '';
+
+    /**
+     * @var client
+     */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
 
     /**
      * @OA\Get(
@@ -55,12 +72,7 @@ class DistributionController extends Controller
     public function index()
     {
         return Cache::rememberForever('allDistribution', function () {
-
-            $client = new Client();
-
-            $url = config('app.distrowatch_url');
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             $crawler->filter('select')->children()->each(function ($node, $i) {
                 if ($i > 0) {
@@ -102,17 +114,10 @@ class DistributionController extends Controller
      */
     public function show($slug)
     {
-        // 1 day
-        $seocnds = 86400;
-
         $cache_name = Str::camel('distribution ' . $slug);
 
-        return Cache::remember($cache_name, $seocnds, function () use ($slug) {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . "table.php?distribution=$slug";
-
-            $crawler = $client->request('GET', $url);
+        return Cache::remember($cache_name, 86400, function () use ($slug) {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . "table.php?distribution=$slug");
 
             // Check for not found
             $node = $crawler->filter('h1')->eq(0);
@@ -159,28 +164,28 @@ class DistributionController extends Controller
         });
     }
 
-    private function getDistributionName($node)
+    public function getDistributionName($node)
     {
         $this->distribution = $node->text();
 
         return $this->distribution;
     }
 
-    private function getOsType($filter_ul_element)
+    public function getOsType($filter_ul_element)
     {
         $this->os_type = $filter_ul_element->eq(1)->filter('li')->eq(0)->filter('a')->text();
 
         return $this->os_type;
     }
 
-    private function getLastUpdate($node)
+    public function getLastUpdate($node)
     {
         $this->last_update = Str::remove('Last Update: ', $node->nextAll()->text());
 
         return $this->last_update;
     }
 
-    private function getAboutText($crawler)
+    public function getAboutText($crawler)
     {
         $remove_ul_text = Str::remove($crawler->filter('.TablesTitle')->filter('ul')->text(), $crawler->filter('.TablesTitle')->text());
 
@@ -191,7 +196,7 @@ class DistributionController extends Controller
         return $this->about;
     }
 
-    private function getBasedOn($filter_ul_element)
+    public function getBasedOn($filter_ul_element)
     {
         $filter_ul_element->eq(1)->filter('li')->eq(1)->filter('a')->each(function ($node) {
             $this->based_on[] = Str::remove('Based on: ', $node->text());
@@ -200,14 +205,14 @@ class DistributionController extends Controller
         return $this->based_on;
     }
 
-    private function getOrigin($filter_ul_element)
+    public function getOrigin($filter_ul_element)
     {
         $this->origin = $filter_ul_element->eq(1)->filter('li')->eq(2)->filter('a')->text();
 
         return $this->origin;
     }
 
-    private function getArchitectures($filter_ul_element)
+    public function getArchitectures($filter_ul_element)
     {
         $filter_ul_element->eq(1)->filter('li')->eq(3)->filter('a')->each(function ($node) {
             $this->architecture[] = Str::remove('Architecture: ', $node->text());
@@ -216,7 +221,7 @@ class DistributionController extends Controller
         return $this->architecture;
     }
 
-    private function getDesktopTypes($filter_ul_element)
+    public function getDesktopTypes($filter_ul_element)
     {
         $filter_ul_element->eq(1)->filter('li')->eq(4)->filter('a')->each(function ($node) {
             $this->desktop[] = Str::remove('Desktop: ', $node->text());
@@ -225,7 +230,7 @@ class DistributionController extends Controller
         return $this->desktop;
     }
 
-    private function getCategories($filter_ul_element)
+    public function getCategories($filter_ul_element)
     {
         $filter_ul_element->eq(1)->filter('li')->eq(5)->filter('a')->each(function ($node) {
             $this->category[] = Str::remove('Category: ', $node->text());
@@ -234,27 +239,27 @@ class DistributionController extends Controller
         return $this->category;
     }
 
-    private function getStatus($filter_ul_element)
+    public function getStatus($filter_ul_element)
     {
         $this->status = Str::remove('Status: ', $filter_ul_element->eq(1)->filter('li')->eq(6)->text());
 
         return $this->status;
     }
 
-    private function getPopularity($filter_ul_element)
+    public function getPopularity($filter_ul_element)
     {
         $this->popularity = Str::remove('Popularity: ', $filter_ul_element->eq(1)->filter('li')->eq(7)->text());
 
         return $this->popularity;
     }
 
-    private function getHomepageUrl($filter_background_class)
+    public function getHomepageUrl($filter_background_class)
     {
         $this->homepage = $filter_background_class->eq(1)->filter('a')->link()->getUri();
         return $this->homepage;
     }
 
-    private function getMailingList($filter_background_class)
+    public function getMailingList($filter_background_class)
     {
         $filter_text = Str::remove('Mailing Lists  ', $filter_background_class->eq(2)->text());
 
@@ -263,7 +268,7 @@ class DistributionController extends Controller
         return $this->mailing_list;
     }
 
-    private function getUserForumUrl($filter_background_class)
+    public function getUserForumUrl($filter_background_class)
     {
         $this->user_forum = count($filter_background_class->eq(3)->filter('a')) != 0 ?
             $filter_background_class->eq(3)->filter('a')->link()->getUri() : '';
@@ -271,14 +276,14 @@ class DistributionController extends Controller
         return $this->user_forum;
     }
 
-    private function getAlternativeUserForum($filter_background_class)
+    public function getAlternativeUserForum($filter_background_class)
     {
         $this->alternative_user_forum = $filter_background_class->eq(4)->text();
 
         return $this->alternative_user_forum;
     }
 
-    private function getDocumentation($filter_background_class)
+    public function getDocumentation($filter_background_class)
     {
         $filter_background_class->eq(5)->filter('a')->each(function ($node) {
             $this->documentation[] = $node->text();
@@ -287,7 +292,7 @@ class DistributionController extends Controller
         return $this->documentation;
     }
 
-    private function getScreenshots($filter_background_class)
+    public function getScreenshots($filter_background_class)
     {
         $filter_background_class->eq(6)->filter('a')->each(function ($node) {
             $this->screenshots[] = $node->link()->getUri();
@@ -296,7 +301,7 @@ class DistributionController extends Controller
         return $this->screenshots;
     }
 
-    private function getScreencasts($filter_background_class)
+    public function getScreencasts($filter_background_class)
     {
         $filter_background_class->eq(7)->filter('a')->each(function ($node) {
             $this->screencasts[] = $node->link()->getUri();
@@ -305,7 +310,7 @@ class DistributionController extends Controller
         return $this->screencasts;
     }
 
-    private function getDownloadMirrorLinks($filter_background_class)
+    public function getDownloadMirrorLinks($filter_background_class)
     {
         $filter_background_class->eq(8)->filter('a')->each(function ($node) {
             $this->download_mirrors[] = $node->link()->getUri();
@@ -314,7 +319,7 @@ class DistributionController extends Controller
         return $this->download_mirrors;
     }
 
-    private function getBugTrackerLinks($filter_background_class)
+    public function getBugTrackerLinks($filter_background_class)
     {
         $filter_text = Str::remove('Bug Tracker ', $filter_background_class->eq(9)->text());
 
@@ -323,7 +328,7 @@ class DistributionController extends Controller
         return $this->bug_tracker;
     }
 
-    private function getRelatedWebsites($filter_background_class)
+    public function getRelatedWebsites($filter_background_class)
     {
         $filter_background_class->eq(10)->filter('a')->each(function ($node) {
             $this->related_websites[] = $node->link()->getUri();
@@ -332,7 +337,7 @@ class DistributionController extends Controller
         return $this->related_websites;
     }
 
-    private function getReviews($filter_background_class)
+    public function getReviews($filter_background_class)
     {
         $filter_background_class->eq(11)->filter('a')->each(function ($node) {
             $this->reviews[] = $node->link()->getUri();
@@ -342,7 +347,7 @@ class DistributionController extends Controller
     }
 
     /* Check the skor if exists to anticipate an error */
-    private function checkSkorAndAverageRating($crawler)
+    public function checkSkorAndAverageRating($crawler)
     {
         if (count($crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
             $skor = $crawler->filter('blockquote')->eq(0)->filter('div')->eq(2)->html();
@@ -356,7 +361,7 @@ class DistributionController extends Controller
     }
 
     /* Check the where to buy or try if exists to anticipate an error */
-    private function checkWhereToBuy($filter_background_class)
+    public function checkWhereToBuy($filter_background_class)
     {
         if (count($filter_background_class->eq(12)->filter('a')) != 0) {
             $this->where_to_buy_or_try['url'] = $filter_background_class->eq(12)->filter('a')->link()->getUri();
@@ -367,7 +372,7 @@ class DistributionController extends Controller
         }
     }
 
-    private function recentRelatedNewsAndReleases($filter_background_class)
+    public function recentRelatedNewsAndReleases($filter_background_class)
     {
         // bug: manjaro and some distro dont show recent_related_news_and_releases
         $filter_background_class->filter('.Background')->eq(13)->filter('a')->each(function ($node) {

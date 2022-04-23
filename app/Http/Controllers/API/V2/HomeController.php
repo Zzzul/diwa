@@ -31,10 +31,10 @@ class HomeController extends Controller
                 'source' => 'https://github.com/Zzzul/diwa',
                 'endpoints' => [
                     'distribution' => [
-                        'all' => route("distribution.index"),
+                        'all' => route("distributions.index"),
                         'detail' => [
-                            'url' => url('/api/distribution/{name}'),
-                            'example' => route("distribution.show", 'mx'),
+                            'url' => url('/api/distributions/{name}'),
+                            'example' => route("distributions.show", 'mx'),
                         ],
                         'ranking' => [
                             'default' => [

@@ -1,18 +1,36 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class SearchController extends Controller
 {
-    private array $params = [];
-    private array $lists = [];
+    protected array $params = [];
+    protected array $lists = [];
+
+    /**
+     * @var client
+     */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
+
 
     /**
      * @OA\Get(
@@ -26,12 +44,7 @@ class SearchController extends Controller
     public function index()
     {
         return Cache::rememberForever('searchIndex',  function () {
-
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . 'search.php';
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . 'search.php');
 
             $filter_select_element = $crawler->filter('.NewsText')->filter('table')->filter('select');
 
@@ -243,11 +256,9 @@ class SearchController extends Controller
             $default_init,
             $status
         ) {
-            $client = new Client();
+            $fullUrl = $this->baseUrl . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
 
-            $url = config('app.distrowatch_url') . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', $fullUrl);
 
             $crawler->filter('.NewsText')->eq(1)->filter('b')->each(function ($node, $i) {
                 /**
@@ -284,7 +295,7 @@ class SearchController extends Controller
         });
     }
 
-    private function getAllValueForParams($filter_select_element)
+    public function getAllValueForParams($filter_select_element)
     {
         $filter_select_element->eq(0)->children()->each(function ($node) {
             $this->params['os_type'][] = $node->attr('value');

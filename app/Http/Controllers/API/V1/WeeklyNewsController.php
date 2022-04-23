@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,6 +15,23 @@ class WeeklyNewsController extends Controller
     private $content = [];
     private $title = '';
     private $story = '';
+
+    /**
+     * @var client
+     */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
+
 
     /**
      * @OA\Get(
@@ -27,15 +45,8 @@ class WeeklyNewsController extends Controller
      */
     public function index()
     {
-        // 1 day
-        $seocnds = 86400;
-
-        return Cache::remember('allWeeklyNews', $seocnds, function () {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . 'weekly.php';
-
-            $crawler = $client->request('GET', $url);
+        return Cache::remember('allWeeklyNews', 86400, function () {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . 'weekly.php');
 
             $crawler->filter('.List')->each(function ($node) {
                 $url = $node->filter('a')->link()->getUri();
@@ -80,11 +91,7 @@ class WeeklyNewsController extends Controller
         $seocnds = 86400;
 
         return Cache::remember('weeklyNews' . $id, $seocnds, function () use ($id) {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . "weekly.php?issue=$id";
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . "weekly.php?issue=$id");
 
             // title
             $this->title = $crawler->filter('.rTitle')->text();
