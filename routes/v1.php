@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\{HomeController, ParamsController, RankingController, WeeklyNewsController, DistributionController, DistributionNewsController, SearchController};
 
-Route::get('/', HomeController::class)->name('home');
+Route::get('/', HomeController::class)->name('home.v1');
 
 Route::prefix('params')->group(function () {
     Route::get('/ranking', [ParamsController::class, 'rankingParams'])->name('params.ranking');

@@ -9,10 +9,6 @@ class GoutteClientService
 {
     public function setup(): Client
     {
-        if (env('APP_ENV') == 'local') {
-            return new Client(HttpClient::create(['verify_peer' => false, 'verify_host' => false]));
-        }
-
-        return new Client();
+        return new Client(HttpClient::create(['verify_peer' => false, 'verify_host' => false]));
     }
 }

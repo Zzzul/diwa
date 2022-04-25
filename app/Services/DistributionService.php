@@ -83,7 +83,7 @@ class DistributionService
                     'name' => $node->text(),
                     'detail' => [
                         'distrowatch' => $baseUrl . $node->attr('value'),
-                        'diwa' => route("distributions.show", $node->attr('value')),
+                        'diwa' => route("v2.distributions.show", $node->attr('value')),
                     ]
                 ];
             }

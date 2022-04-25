@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V2;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
@@ -22,10 +22,16 @@ class DistributionController extends Controller
      */
     public $client;
 
+    /**
+     * @var baseUrl
+     */
+    public string $baseUrl;
+
     public function __construct(DistributionService $distributionService, GoutteClientService $goutteClientService)
     {
         $this->distributionService = $distributionService;
         $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
     }
 
     /**
@@ -44,17 +50,17 @@ class DistributionController extends Controller
      */
     public function index()
     {
-        // return Cache::remember('distributions', now()->addWeek(), function () {
-
-            $baseUrl = config('app.distrowatch_url');
-
-            $crawler = $this->client->request('GET', $baseUrl);
+        return Cache::remember('distributions-v2', now()->addWeek(), function () {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             return response()->json([
                 'message' => 'success',
-                'distibutions' => $this->distributionService->getAllDistribution(node: $crawler->filter('select')->children(), baseUrl: $baseUrl),
+                'distibutions' => $this->distributionService->getAllDistribution(
+                    node: $crawler->filter('select')->children(),
+                    baseUrl: (string) $this->baseUrl
+                ),
             ], Response::HTTP_OK);
-        // });
+        });
     }
 
     /**
@@ -81,19 +87,18 @@ class DistributionController extends Controller
     {
         $cacheName = Str::camel('distribution ' . $slug);
 
-        // return Cache::remember($cacheName, now()->addDay(), function () use ($slug) {
+        return Cache::remember($cacheName, now()->addDay(), function () use ($slug) {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . "table.php?distribution=$slug");
 
-            $baseUrl = config('app.distrowatch_url') . "table.php?distribution=$slug";
-
-            $crawler = $this->client->request('GET', $baseUrl);
-
-            // Check for not found
+            /**
+             * Check for not found
+             */
             $node = $crawler->filter('h1')->eq(0);
 
             if (count($node) == 0) {
                 return response()->json([
                     'message' => 'distribution not found.',
-                    'home' => route("home")
+                    'home' => route("v2.home")
                 ], Response::HTTP_NOT_FOUND);
             }
 
@@ -112,23 +117,23 @@ class DistributionController extends Controller
                 'status' => $this->distributionService->getStatus($filterUl),
                 'popularity' => $this->distributionService->getPopularity($filterUl),
                 'homepage' => $this->distributionService->getHomepageUrl($filterBackground),
-                'mailing_list' => $this->distributionService->getMailingList($filterBackground),
                 'user_forum' => $this->distributionService->getUserForumUrl($filterBackground),
                 'alternative_user_forum' => $this->distributionService->getAlternativeUserForum($filterBackground),
+                'mailing_list' => $this->distributionService->getMailingList($filterBackground),
+                'screencasts' => $this->distributionService->getScreencasts($filterBackground),
+                'where_to_buy_or_tries' => $this->distributionService->checkWhereToBuy($filterBackground),
+                'related_websites' => $this->distributionService->getRelatedWebsites($filterBackground),
                 'based_ons' => $this->distributionService->getBasedOns($filterUl),
                 'architectures' => $this->distributionService->getArchitectures($filterUl),
                 'desktops' => $this->distributionService->getDesktopTypes($filterUl),
                 'categories' => $this->distributionService->getCategories($filterUl),
                 'documentations' => $this->distributionService->getDocumentation($filterBackground),
                 'screenshots' => $this->distributionService->getScreenshots($filterBackground),
-                'screencasts' => $this->distributionService->getScreencasts($filterBackground),
                 'download_mirrors' => $this->distributionService->getDownloadMirrorLinks($filterBackground),
                 'bug_tracker' => $this->distributionService->getBugTrackerLinks($filterBackground),
-                'related_websites' => $this->distributionService->getRelatedWebsites($filterBackground),
                 'reviews' => $this->distributionService->getReviews($filterBackground),
-                'where_to_buy_or_tries' => $this->distributionService->checkWhereToBuy($filterBackground),
                 'recent_related_news_and_releases' => $this->distributionService->recentRelatedNewsAndRealeses($filterBackground),
             ], Response::HTTP_OK);
-        // });
+        });
     }
 }

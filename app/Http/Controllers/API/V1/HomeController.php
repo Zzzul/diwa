@@ -24,9 +24,9 @@ class HomeController extends Controller
      */
     public function __invoke()
     {
-        return Cache::rememberForever('home',  function () {
+        return Cache::rememberForever('home-v1',  function () {
             return response()->json([
-                'message' => 'Success',
+                'message' => 'success',
                 'docs' => url('/documentation'),
                 'source' => 'https://github.com/Zzzul/diwa',
                 'endpoints' => [
