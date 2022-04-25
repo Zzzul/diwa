@@ -15,7 +15,7 @@ class DistributionController extends Controller
     /**
      * @var distributionService
      */
-    public $distributionService;
+    public DistributionService $distributionService;
 
     /**
      * @var client
@@ -119,18 +119,18 @@ class DistributionController extends Controller
                 'homepage' => $this->distributionService->getHomepageUrl($filterBackground),
                 'user_forum' => $this->distributionService->getUserForumUrl($filterBackground),
                 'alternative_user_forum' => $this->distributionService->getAlternativeUserForum($filterBackground),
-                'mailing_list' => $this->distributionService->getMailingList($filterBackground),
-                'screencasts' => $this->distributionService->getScreencasts($filterBackground),
-                'where_to_buy_or_tries' => $this->distributionService->checkWhereToBuy($filterBackground),
-                'related_websites' => $this->distributionService->getRelatedWebsites($filterBackground),
                 'based_ons' => $this->distributionService->getBasedOns($filterUl),
                 'architectures' => $this->distributionService->getArchitectures($filterUl),
                 'desktops' => $this->distributionService->getDesktopTypes($filterUl),
                 'categories' => $this->distributionService->getCategories($filterUl),
+                'mailing_list' => $this->distributionService->getMailingList($filterBackground),
+                'screencasts' => $this->distributionService->getScreencasts($filterBackground),
+                'where_to_buy_or_tries' => $this->distributionService->checkWhereToBuy($filterBackground),
+                'related_websites' => $this->distributionService->getRelatedWebsites($filterBackground),
+                'bug_tracker' => $this->distributionService->getBugTrackerLinks($filterBackground),
                 'documentations' => $this->distributionService->getDocumentation($filterBackground),
                 'screenshots' => $this->distributionService->getScreenshots($filterBackground),
                 'download_mirrors' => $this->distributionService->getDownloadMirrorLinks($filterBackground),
-                'bug_tracker' => $this->distributionService->getBugTrackerLinks($filterBackground),
                 'reviews' => $this->distributionService->getReviews($filterBackground),
                 'recent_related_news_and_releases' => $this->distributionService->recentRelatedNewsAndRealeses($filterBackground),
             ], Response::HTTP_OK);

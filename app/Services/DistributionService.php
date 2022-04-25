@@ -40,12 +40,12 @@ class DistributionService
     /**
      * @var documentations
      */
-    protected array $documentations;
+    protected mixed $documentations;
 
     /**
-     * @var screenhots
+     * @var screenshots
      */
-    protected array $screenhots;
+    protected mixed $screenshots;
 
     /**
      * @var screencasts
@@ -195,22 +195,33 @@ class DistributionService
         return $node->eq(4)->text();
     }
 
-    public function getDocumentation(Crawler $node): array
+    public function getDocumentation(Crawler $node): mixed
     {
-        $node->eq(5)->filter('a')->each(function ($node) {
-            $this->documentations[] = $node->text();
-        });
+        if(count($node->eq(5)->filter('a')) != 0){
+            $this->documentations = [];
 
-        return (array) $this->documentations;
+            $node->eq(5)->filter('a')->each(function ($node) {
+                $this->documentations[] = $node->text();
+            });
+        }else{
+            $this->documentations = null;
+        }
+
+        return $this->documentations;
     }
 
-    public function getScreenshots(Crawler $node): array
+    public function getScreenshots(Crawler $node): mixed
     {
-        $node->eq(6)->filter('a')->each(function ($node) {
-            $this->screenshots[] = $node->link()->getUri();
-        });
+        if(count($node->eq(6)->filter('a')) != 0){
+            $this->screenshots = [];
+            $node->eq(6)->filter('a')->each(function ($node) {
+                $this->screenshots[] = $node->link()->getUri();
+            });
+        }else{
+            $this->screenshots = null;
+        }
 
-        return (array)$this->screenshots;
+        return $this->screenshots;
     }
 
     public function getScreencasts(Crawler $node): mixed
