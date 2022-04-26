@@ -55,7 +55,7 @@ class DistributionService
     /**
      * @var reviews
      */
-    protected array $reviews;
+    protected mixed $reviews;
 
     /**
      * @var newsAndRealeses
@@ -190,11 +190,6 @@ class DistributionService
         return count($node->eq(3)->filter('a')) != 0 ? $node->eq(3)->filter('a')->link()->getUri() : null;
     }
 
-    public function getAlternativeUserForum(Crawler $node): string
-    {
-        return $node->eq(4)->text();
-    }
-
     public function getDocumentation(Crawler $node): mixed
     {
         if(count($node->eq(5)->filter('a')) != 0){
@@ -272,16 +267,20 @@ class DistributionService
         return $this->relatedWebsites;
     }
 
-    public function getReviews(Crawler $node): array
+    public function getReviews(Crawler $node): array|null
     {
-        $node->eq(11)->filter('a')->each(function ($node) {
-            $this->reviews[] = $node->link()->getUri();
-        });
+        if(count($node->eq(11)->filter('a')) != 0 ){
+            $this->reviews = [];
+            $node->eq(11)->filter('a')->each(function ($node) {
+                $this->reviews[] = $node->link()->getUri();
+            });
+        }else{
+            $this->reviews = null;
+        }
 
-        return (array) $this->reviews;
+        return $this->reviews;
     }
 
-    /* Check the skor if exists to anticipate an error */
     public function checkScoreAndAverageRating(Crawler $node): string
     {
         if (count($node->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
@@ -293,7 +292,6 @@ class DistributionService
         return $score . ' from ' . $node->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews';
     }
 
-    /* Check the where to buy or try if exists to anticipate an error */
     public function checkWhereToBuy(Crawler $node): mixed
     {
         if (count($node->eq(12)->filter('a')) != 0) {

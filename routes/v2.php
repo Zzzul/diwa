@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\V2\{DistributionController, HomeController, V2RankingController};
+use App\Http\Controllers\API\V2\{V2DistributionController, HomeController, V2RankingController};
 
 Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/', HomeController::class)->name('home');
 
-    Route::apiResource('/distributions', DistributionController::class)->only('index', 'show');
+    Route::apiResource('/distributions', V2DistributionController::class)->only('index', 'show');
     Route::apiResource('/rankings', V2RankingController::class)->only('index', 'show');
 
     // Route::apiResource('/news', DistributionNewsController::class)->only('index', 'show');

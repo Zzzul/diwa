@@ -9,7 +9,7 @@ use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class DistributionController extends Controller
+class V2DistributionController extends Controller
 {
     /**
      * @var distributionService
@@ -117,10 +117,9 @@ class DistributionController extends Controller
                 'popularity' => $this->distributionService->getPopularity($filterUl),
                 'homepage' => $this->distributionService->getHomepageUrl($filterBackground),
                 'user_forum' => $this->distributionService->getUserForumUrl($filterBackground),
-                'alternative_user_forum' => $this->distributionService->getAlternativeUserForum($filterBackground),
                 'based_ons' => $this->distributionService->getBasedOns($filterUl),
                 'architectures' => $this->distributionService->getArchitectures($filterUl),
-                'desktops' => $this->distributionService->getDesktopTypes($filterUl),
+                'desktop_environments' => $this->distributionService->getDesktopTypes($filterUl),
                 'categories' => $this->distributionService->getCategories($filterUl),
                 'mailing_list' => $this->distributionService->getMailingList($filterBackground),
                 'screencasts' => $this->distributionService->getScreencasts($filterBackground),
