@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 class V2DistributionController extends Controller
 {
     /**
-     * @var distributionService
+     * @var DistributionService distributionService
      */
     public DistributionService $distributionService;
 

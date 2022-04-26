@@ -13,19 +13,19 @@ use Symfony\Component\HttpFoundation\Response;
 class V2RankingController extends Controller
 {
     /**
-     * @var rankingService
+     * @var RankingService rankingService
      */
-    protected RankingService $rankingService;
+    public RankingService $rankingService;
 
     /**
      * @var client
      */
-    protected $client;
+    public $client;
 
     /**
      * @var baseUrl
      */
-    protected string $baseUrl;
+    public string $baseUrl;
 
     public function __construct(GoutteClientService $goutteClientService, RankingService $rankingService)
     {

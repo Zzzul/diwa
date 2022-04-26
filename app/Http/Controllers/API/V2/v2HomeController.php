@@ -24,7 +24,7 @@ class v2HomeController extends Controller
      */
     public function __invoke()
     {
-        $reponse = [
+        return response()->json([
             'message' => 'success',
             'docs' => url('/documentation/v2'),
             'source' => 'https://github.com/Zzzul/diwa',
@@ -48,9 +48,9 @@ class v2HomeController extends Controller
                         ]
                     ],
                     'search' => [
-                        'avaiable_params' => route("params.search"),
+                        'avaiable_params' => route("v2.params.search"),
                         'url' => url('/api/v2/search?ostype={os_type}&category={distribution_category}&origin={country_of_origin}&basedon={based_on}&notbasedon={not_based_on}&desktop={desktop_environment}&architecture={architecture}&package={package_manager}&rolling={release_model}&isosize={install_media_size}&netinstall={install_mehthod}&language={multi_language_support}&defaultinit={software_init}&status={status}#simple'),
-                        'example' => route("search.index", 'notbasedon=None&ostype=Linux&category=All&origin=All&basedon=Ubuntu&desktop=Xfce&architecture=All&package=All&rolling=All&isosize=All&netinstall=All&language=All&defaultinit=All&status=Active'),
+                        'example' => route("v2.search.index", 'notbasedon=None&ostype=Linux&category=All&origin=All&basedon=Ubuntu&desktop=Xfce&architecture=All&package=All&rolling=All&isosize=All&netinstall=All&language=All&defaultinit=All&status=Active'),
                         'note' => 'If one of the {params} not found, distrowatch.com will used default params(All/None)'
                     ]
                 ],
@@ -77,7 +77,7 @@ class v2HomeController extends Controller
                     'weekly_news' => [
                         'all' => [
                             'url' => route("weekly.index"),
-                            'note' => 'Warning - big size response'
+                            'note' => 'Big size response!'
                         ],
                         'detail' => [
                             'url' => route("weekly.index") . '/{weekly_id}',
@@ -87,14 +87,6 @@ class v2HomeController extends Controller
                     ],
                 ],
             ],
-        ];
-
-        if(env('APP_ENV') != 'local'){
-            return Cache::rememberForever('home-v2',  function () use($reponse) {
-                return response()->json($reponse, Response::HTTP_OK);
-            });
-        }
-
-        return response()->json($reponse, Response::HTTP_OK);
+        ], Response::HTTP_OK);
     }
 }

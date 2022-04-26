@@ -17,7 +17,7 @@ class V2ParamsController extends Controller
     public $client;
 
     /**
-     * @var paramService
+     * @var ParamService paramService
      */
     public ParamService $paramService;
 
