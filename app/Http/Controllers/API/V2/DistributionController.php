@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API\V2;
 
-use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Services\DistributionService;
@@ -36,11 +35,11 @@ class DistributionController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/distribution",
-     *     tags={"Distribution"},
+     *     path="/api/v2/distributions",
+     *     tags={"v2-Distributions"},
      *     summary="Get all Distribution",
      *     operationId="getAllDistribution",
-     *     @OA\Response(response="200", description="Success")
+     *     @OA\Response(response="200", description="success")
      * )
      *
      *  @OA\Tag(
@@ -65,12 +64,12 @@ class DistributionController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/distribution/{name}",
-     *     tags={"Distribution"},
+     *     path="/api/v2/distribution/{name}",
+     *     tags={"v2-Distribution"},
      *     summary="Get distribution information detail",
      *     description="If {name} not found, will return 404",
-     *     operationId="getDistributionById",
-     *     @OA\Response(response="200", description="Success"),
+     *     operationId="findDistributionById",
+     *     @OA\Response(response="200", description="success"),
      *     @OA\Parameter(
      *          name="name",
      *          description="Distribution Name",

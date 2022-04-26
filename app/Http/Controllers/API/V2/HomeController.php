@@ -37,12 +37,12 @@ class HomeController extends Controller
                     ],
                     'rankings' => [
                         'default' => [
-                            'url' => route("ranking.index"),
+                            'url' => route("v2.rankings.index"),
                             'note' => 'Top 100 rankings of last 6 months'
                         ],
                         'custom' => [
-                            'url' => route("ranking.index") . '/{slug}',
-                            'example' => route("ranking.show", 'trending-1'),
+                            'url' => route("v2.rankings.index") . '/{slug}',
+                            'example' => route("v2.rankings.show", 'trending-1'),
                             'avaiable_params' => route("params.ranking"),
                             'note' => 'If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
                         ]
