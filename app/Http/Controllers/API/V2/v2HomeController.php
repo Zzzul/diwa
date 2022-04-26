@@ -6,19 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class HomeController extends Controller
+class v2HomeController extends Controller
 {
     /**
      * @OA\Get(
-     *   path="/api",
-     *   tags={"Home"},
-     *   summary="Get all avaiable endpoints and info about this API",
-     *   operationId="home",
+     *   path="/api/v2",
+     *   tags={"v2-Home"},
+     *   summary="Get all v2 avaiable endpoints",
+     *   operationId="v2-ome",
      *   @OA\Response(response=200, description="success")
      * )
      *
      *  @OA\Tag(
-     *     name="Home",
+     *     name="v2-Home",
      *     description="v2 home endpoints"
      * )
      */
@@ -43,7 +43,7 @@ class HomeController extends Controller
                         'custom' => [
                             'url' => route("v2.rankings.index") . '/{slug}',
                             'example' => route("v2.rankings.show", 'trending-1'),
-                            'avaiable_params' => route("params.ranking"),
+                            'avaiable_params' => route("v2.params.rankings"),
                             'note' => 'If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct',
                         ]
                     ],
