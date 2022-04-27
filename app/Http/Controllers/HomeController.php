@@ -13,18 +13,6 @@ class HomeController extends Controller
      */
     public function __invoke()
     {
-        if (env('APP_ENV') != 'local') {
-            return Cache::rememberForever('home',  function () {
-                return response()->json([
-                    'message' => 'success',
-                    'versions' => [
-                        'v1' => route('home.v1'),
-                        'v2' => route('home.v2')
-                    ]
-                ]);
-            });
-        }
-
         return response()->json([
             'message' => 'success',
             'versions' => [

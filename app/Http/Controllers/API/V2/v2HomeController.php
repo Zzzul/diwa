@@ -58,19 +58,19 @@ class v2HomeController extends Controller
                     'distribution_news' => [
                         'all' => [
                             'default' => [
-                                'url' => route("news.index"),
+                                'url' => route("v2.news.index"),
                                 'note' => 'Latest 12 news and 1 sponsor news'
                             ],
                             'custom' => [
-                                'url' => route("news.filter") . '?distribution=distribution_name&release=realease&month=month&year=year',
-                                'example' => route("news.filter") . '?distribution=ubuntu&release=stable&month=all&year=2021',
-                                'avaiable_params' => route("params.news"),
+                                'url' => route("v2.news.filter") . '?distribution=distribution_name&release=realease&month=month&year=year',
+                                'example' => route("v2.news.filter") . '?distribution=ubuntu&release=stable&month=all&year=2021',
+                                'avaiable_params' => route("v2.params.news"),
                                 'note' => 'If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct',
                             ],
                         ],
                         'detail' => [
-                            'url' => route("news.index") . '/{news_id}',
-                            'example' => route("news.show", 11300),
+                            'url' => route("v2.news.index") . '/{news_id}',
+                            'example' => route("v2.news.show", 11531),
                             'note' => 'If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct'
                         ],
                     ],

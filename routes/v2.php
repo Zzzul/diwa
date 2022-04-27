@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\V2\{V2DistributionController, v2HomeController, V2RankingController,V2ParamsController, V2SearchController};
+use App\Http\Controllers\API\V2\{V2DistributionController, v2NewsController, v2HomeController, V2RankingController,V2ParamsController, V2SearchController};
 
 Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/', v2HomeController::class)->name('home');
@@ -9,8 +9,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::apiResource('/distributions', V2DistributionController::class)->only('index', 'show');
     Route::apiResource('/rankings', V2RankingController::class)->only('index', 'show');
 
-    // Route::apiResource('/news', DistributionNewsController::class)->only('index', 'show');
-    // Route::get('filter/news', [DistributionNewsController::class, 'filterNews'])->name('news.filter');
+    Route::apiResource('/news', v2NewsController::class)->only('index', 'show');
+    Route::get('filter/news', [v2NewsController::class, 'filter'])->name('news.filter');
 
     // Route::apiResource('/weekly', WeeklyNewsController::class)->only('index', 'show');
 
