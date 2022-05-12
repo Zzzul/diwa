@@ -107,9 +107,6 @@ class v2NewsController extends Controller
                         'thumbnail' => $this->newsService->getNewsThumbnail($tableElement),
                         'about' => $this->newsService->getAboutText($tdElement),
                         'body' => $this->newsService->getNewsBody($tableElement),
-                        'distribution_summary' => $this->newsService->getDistributionSummary($infoClassElement->eq(4)->filter('.Info')),
-                        'screenshots' => $this->newsService->getScreenshot($infoClassElement),
-                        'recent_related_news_and_releases' => $this->newsService->getRecentRelatedNews($tdElement),
                     ],
                 ],
 
