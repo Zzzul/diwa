@@ -76,12 +76,12 @@ class v2HomeController extends Controller
                     ],
                     'weekly_news' => [
                         'all' => [
-                            'url' => route("weekly.index"),
+                            'url' => route("v2.weekly.index"),
                             'note' => 'Big size response!'
                         ],
                         'detail' => [
-                            'url' => route("weekly.index") . '/{weekly_id}',
-                            'example' => route("weekly.show", 20210719),
+                            'url' => route("v2.weekly.index") . '/{weekly_id}',
+                            'example' => route("v2.weekly.show", 20220502),
                             'note' => 'If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct'
                         ],
                     ],
