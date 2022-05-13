@@ -1,37 +1,55 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class ParamsController extends Controller
 {
-    private array $distribution = [];
-    private array $release = [];
-    private array $year = [];
-    private array $month = [];
+    /**
+     * @var client
+     */
+    protected $client;
 
     /**
-     * @OA\Get(
-     *     path="/api/params/ranking",
-     *     tags={"Ranking"},
-     *     summary="Get all available parameters for filter the ranking (below ↓)",
-     *     operationId="GetAllAvailableParametersRanking",
-     *     @OA\Response(response="200", description="Success")
-     * )
+     * @var baseUrl
      */
+    protected string $baseUrl;
+
+    /**
+     * @var distribution
+     */
+    protected array $distribution = [];
+
+    /**
+     * @var release
+     */
+    protected array $release = [];
+
+    /**
+     * @var year
+     */
+    protected array $year = [];
+
+    /**
+     * @var month
+     */
+    protected array $month = [];
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
+
     public function rankingParams()
     {
         return Cache::rememberForever('rankingParams',  function () {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url');
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             // All distribution
             $crawler->filter('select')->eq(5)->children()->each(function ($node) {
@@ -50,23 +68,10 @@ class ParamsController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/params/news",
-     *     tags={"News"},
-     *     summary="Get all available parameters for filter the news (above ↑)",
-     *     operationId="GetAllAvailableParametersNews",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     */
     public function newsParams()
     {
         return Cache::rememberForever('newsParams',  function () {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url');
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             $filter_select_element = $crawler->filter('.Introduction')->filter('select');
 

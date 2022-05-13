@@ -1,37 +1,40 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class SearchController extends Controller
 {
-    private array $params = [];
-    private array $lists = [];
+    protected array $params = [];
+    protected array $lists = [];
 
     /**
-     * @OA\Get(
-     *     path="/api/params/search",
-     *     tags={"Distribution"},
-     *     summary="Get all available parameters for search the distribution (below ↓)",
-     *     operationId="GetAllAvailableParametersForSearch",
-     *     @OA\Response(response="200", description="Success")
-     * )
+     * @var client
      */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
+
     public function index()
     {
         return Cache::rememberForever('searchIndex',  function () {
-
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . 'search.php';
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . 'search.php');
 
             $filter_select_element = $crawler->filter('.NewsText')->filter('table')->filter('select');
 
@@ -42,156 +45,6 @@ class SearchController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/search",
-     *     tags={"Distribution"},
-     *     summary="Get specific distribution",
-     *     description="If one of the {params} not found/empty, distrowatch.com will used default params(All)",
-     *     operationId="FilterDistribution",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="ostype",
-     *          description="OS Type",
-     *          required=true,
-     *          in="query",
-     *          example="Linux",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="category",
-     *          description="Distribution Category",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="origin",
-     *          description="Country of Origin",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="basedon",
-     *          description="Based on",
-     *          required=true,
-     *          in="query",
-     *          example="Ubuntu",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="notbasedon",
-     *          description="Not Based on",
-     *          required=true,
-     *          in="query",
-     *          example="None",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="desktop",
-     *          description="Desktop Interface",
-     *          required=true,
-     *          in="query",
-     *          example="Xfce",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="architecture",
-     *          description="Architecture",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="package",
-     *          description="Package Management",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="rolling",
-     *          description="Release Model",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *      @OA\Parameter(
-     *          name="isosize",
-     *          description="Install Media Size",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *      @OA\Parameter(
-     *          name="netinstall",
-     *          description="Install Method",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *      @OA\Parameter(
-     *          name="language",
-     *          description="Multi Language Support",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *      @OA\Parameter(
-     *          name="defaultinit",
-     *          description="Init Sofrware",
-     *          required=true,
-     *          in="query",
-     *          example="All",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *      @OA\Parameter(
-     *          name="status",
-     *          description="Status",
-     *          required=true,
-     *          in="query",
-     *          example="Active",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     * )
-     */
     public function show(Request $request)
     {
         $os_type = $request->ostype ?? 'All';
@@ -243,11 +96,9 @@ class SearchController extends Controller
             $default_init,
             $status
         ) {
-            $client = new Client();
+            $fullUrl = $this->baseUrl . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
 
-            $url = config('app.distrowatch_url') . "search.php?ostype=$os_type&category=$category&origin=$origin&basedon=$based_on&notbasedon=$not_based_on&desktop=$desktop&architecture=$architecture&package=$package&rolling=$rolling&isosize=$iso_size&netinstall=$net_install&language=$language&defaultinit=$default_init&status=$status#simple";
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', $fullUrl);
 
             $crawler->filter('.NewsText')->eq(1)->filter('b')->each(function ($node, $i) {
                 /**
@@ -284,7 +135,7 @@ class SearchController extends Controller
         });
     }
 
-    private function getAllValueForParams($filter_select_element)
+    public function getAllValueForParams($filter_select_element)
     {
         $filter_select_element->eq(0)->children()->each(function ($node) {
             $this->params['os_type'][] = $node->attr('value');

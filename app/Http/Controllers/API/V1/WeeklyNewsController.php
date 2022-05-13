@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
+use App\Services\GoutteClientService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,26 +17,25 @@ class WeeklyNewsController extends Controller
     private $story = '';
 
     /**
-     * @OA\Get(
-     *     path="/api/weekly",
-     *     tags={"News"},
-     *     summary="Get all weekly news",
-     *     description="Warning!, big size response",
-     *     operationId="getAllWeeklyNews",
-     *     @OA\Response(response="200", description="Success")
-     * )
+     * @var client
      */
+    protected $client;
+
+    /**
+     * @var baseUrl
+     */
+    protected string $baseUrl;
+
+    public function __construct(GoutteClientService $goutteClientService)
+    {
+        $this->client = $goutteClientService->setup();
+        $this->baseUrl = config('app.distrowatch_url');
+    }
+
     public function index()
     {
-        // 1 day
-        $seocnds = 86400;
-
-        return Cache::remember('allWeeklyNews', $seocnds, function () {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . 'weekly.php';
-
-            $crawler = $client->request('GET', $url);
+        return Cache::remember('allWeeklyNews', 86400, function () {
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . 'weekly.php');
 
             $crawler->filter('.List')->each(function ($node) {
                 $url = $node->filter('a')->link()->getUri();
@@ -53,38 +53,13 @@ class WeeklyNewsController extends Controller
         });
     }
 
-
-    /**
-     * @OA\Get(
-     *     path="/api/weekly/{id}",
-     *     tags={"News"},
-     *     summary="Get weekly news information detail",
-     *     description="If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct",
-     *     operationId="getWeeklyNewsById",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="id",
-     *          description="Weekly News Id",
-     *          required=true,
-     *          in="path",
-     *          example="20210719",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *     ),
-     * )
-     */
     public function show($id)
     {
         // 1 day
         $seocnds = 86400;
 
         return Cache::remember('weeklyNews' . $id, $seocnds, function () use ($id) {
-            $client = new Client();
-
-            $url = config('app.distrowatch_url') . "weekly.php?issue=$id";
-
-            $crawler = $client->request('GET', $url);
+            $crawler = $this->client->request('GET', (string) $this->baseUrl . "weekly.php?issue=$id");
 
             // title
             $this->title = $crawler->filter('.rTitle')->text();
