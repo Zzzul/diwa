@@ -37,20 +37,20 @@ class V2RankingController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/rankings",
-     *     tags={"v2-Rankings"},
+     *     tags={"Rankings"},
      *     summary="Get top 100 distributions rankings of last 6 months",
      *     operationId="Top100Rangking",
      *     @OA\Response(response="200", description="success")
      * )
      *
      *  @OA\Tag(
-     *     name="Ranking",
+     *     name="Rankings",
      *     description="API Endpoints of Ranking"
      * )
      */
     public function index()
     {
-        return Cache::remember('v2-rangkings', 86400, function () {
+        return Cache::remember('v2-rangkings', now()->addDay(2), function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             $crawler->filter('.phr2')->each(function ($node, $i) {
@@ -93,7 +93,7 @@ class V2RankingController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/rankings/{slug}",
-     *     tags={"v2-Rankings"},
+     *     tags={"Rankings"},
      *     summary="Get top 100 distributions rankings with parameter",
      *     description="If {slug} not found, distrowatch.com will return the home page with default rankings(last 6 months). make sure {slug} is correct",
      *     operationId="findRankingnByParams",
@@ -112,9 +112,9 @@ class V2RankingController extends Controller
      */
     public function show(string $slug)
     {
-        $cache_name = Str::camel('v2-rankings-' . $slug);
+        $cacheName = Str::snake('v2-rankings-' . $slug);
 
-        return Cache::remember($cache_name, 86400, function () use ($slug) {
+        return Cache::remember($cacheName, now()->addDay(3), function () use ($slug) {
             $crawler = $this->client->request('GET', (string) $this->baseUrl . "?dataspan=$slug");
 
             $dataSpan = $this->rankingService->getDataSpan(

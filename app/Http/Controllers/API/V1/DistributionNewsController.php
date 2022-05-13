@@ -45,21 +45,6 @@ class DistributionNewsController extends Controller
         $this->baseUrl = config('app.distrowatch_url');
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/news",
-     *     tags={"News"},
-     *     summary="Get all distribution and weekly news",
-     *     operationId="getAllDistributionNews",
-     *     description="Return latest 12 news and 1 sponsor news",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     *
-     *  @OA\Tag(
-     *     name="News",
-     *     description="API Endpoints of News"
-     * )
-     */
     public function index()
     {
         return Cache::remember('allNews', 3600, function () {
@@ -77,26 +62,6 @@ class DistributionNewsController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/news/{id}",
-     *     tags={"News"},
-     *     summary="Get Distribution News information detail",
-     *     description="If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct",
-     *     operationId="getDistributionNewsById",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="id",
-     *          description="News Id",
-     *          required=true,
-     *          in="path",
-     *          example="11302",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *     ),
-     * )
-     */
     public function show($id)
     {
         return Cache::remember('DistributionNews' . $id, 86400, function () use ($id) {
@@ -154,56 +119,6 @@ class DistributionNewsController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/filter/news",
-     *     tags={"News"},
-     *     summary="Get specific distribution news",
-     *     description="If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
-     *     operationId="FilterDistributionNews",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="name",
-     *          description="Distribution Name",
-     *          required=true,
-     *          in="query",
-     *          example="ubuntu",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="release",
-     *          description="Release Version",
-     *          required=true,
-     *          in="query",
-     *          example="stable",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="month",
-     *          description="Month",
-     *          required=true,
-     *          in="query",
-     *          example="all",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *          name="year",
-     *          description="Year",
-     *          required=true,
-     *          in="query",
-     *          example="2021",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *     ),
-     * )
-     */
     public function filterNews(Request $request)
     {
         $distribution = $request->distribution ?? 'all';

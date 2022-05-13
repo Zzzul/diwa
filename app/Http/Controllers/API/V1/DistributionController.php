@@ -55,20 +55,6 @@ class DistributionController extends Controller
         $this->baseUrl = config('app.distrowatch_url');
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/distribution",
-     *     tags={"Distribution"},
-     *     summary="Get all Distribution",
-     *     operationId="getAllDistribution",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     *
-     *  @OA\Tag(
-     *     name="Distribution",
-     *     description="API Endpoints of Distribution"
-     * )
-     */
     public function index()
     {
         return Cache::rememberForever('allDistribution', function () {
@@ -92,26 +78,6 @@ class DistributionController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/distribution/{name}",
-     *     tags={"Distribution"},
-     *     summary="Get distribution information detail",
-     *     description="If {name} not found, will return 404",
-     *     operationId="getDistributionById",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="name",
-     *          description="Distribution Name",
-     *          required=true,
-     *          in="path",
-     *          example="ubuntu",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     )
-     * )
-     */
     public function show($slug)
     {
         $cache_name = Str::camel('distribution ' . $slug);

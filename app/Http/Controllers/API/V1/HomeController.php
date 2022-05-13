@@ -8,20 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class HomeController extends Controller
 {
-    /**
-     * @OA\Get(
-     *   path="/api",
-     *   tags={"Home"},
-     *   summary="Get all endpoints and info about this API",
-     *   operationId="home",
-     *   @OA\Response(response=200, description="Success")
-     * )
-     *
-     *  @OA\Tag(
-     *     name="Home",
-     *     description="API Endpoints of Home"
-     * )
-     */
     public function __invoke()
     {
         return Cache::rememberForever('home-v1',  function () {

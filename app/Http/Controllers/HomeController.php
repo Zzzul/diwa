@@ -6,10 +6,19 @@ use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     *
-     * @return \Illuminate\Http\Response
+        /**
+     * @OA\Info(
+     *      version="2.0",
+     *      title="Diwa",
+     *      description="Diwa is an unofficial simple API from [distrowatch.com](https://distrowatch.com/)",
+     *      @OA\Contact(
+     *          email="mzulfahmi807@gmail.com"
+     *      ),
+     *      @OA\License(
+     *          name="MIT",
+     *          url="https://github.com/Zzzul/diwa/blob/main/LICENSE"
+     *      )
+     * )
      */
     public function __invoke()
     {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API\V1;
 
-use Carbon\Carbon;
 use Goutte\Client;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
@@ -36,20 +35,6 @@ class RankingController extends Controller
         $this->baseUrl = config('app.distrowatch_url');
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/ranking",
-     *     tags={"Ranking"},
-     *     summary="Get top 100 distribution ranking of last 6 months",
-     *     operationId="GetTop100Rangking",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     *
-     *  @OA\Tag(
-     *     name="Ranking",
-     *     description="API Endpoints of Ranking"
-     * )
-     */
     public function index()
     {
         return Cache::remember('rangkingDefault', 86400, function () {
@@ -95,26 +80,6 @@ class RankingController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/ranking/{slug}",
-     *     tags={"Ranking"},
-     *     summary="Get top 100 distribution ranking but with parameter",
-     *     description="If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct",
-     *     operationId="getRankingnByParams",
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Parameter(
-     *          name="slug",
-     *          description="Distribution Slug",
-     *          required=true,
-     *          example="trending-1",
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *     ),
-     * )
-     */
     public function show($slug)
     {
         $cache_name = Str::camel('ranking ' . $slug);

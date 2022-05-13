@@ -36,20 +36,20 @@ class V2DistributionController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/distributions",
-     *     tags={"v2-Distributions"},
+     *     tags={"Distributions"},
      *     summary="Get all Distribution",
      *     operationId="getAllDistribution",
      *     @OA\Response(response="200", description="success")
      * )
      *
      *  @OA\Tag(
-     *     name="Distribution",
+     *     name="Distributions",
      *     description="API Endpoints of Distribution"
      * )
      */
     public function index()
     {
-        return Cache::remember('distributions-v2', now()->addWeek(), function () {
+        return Cache::remember('v2-distributions', now()->addWeek(), function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             return response()->json([
@@ -64,8 +64,8 @@ class V2DistributionController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/distribution/{name}",
-     *     tags={"v2-Distribution"},
+     *     path="/api/v2/distributions/{name}",
+     *     tags={"Distributions"},
      *     summary="Get distribution information detail",
      *     description="If {name} not found, will return 404",
      *     operationId="findDistributionById",
@@ -84,9 +84,9 @@ class V2DistributionController extends Controller
      */
     public function show(string $slug)
     {
-        $cacheName = Str::camel('distribution ' . $slug);
+        $cacheName = Str::snake('v2-distributions-' . $slug);
 
-        return Cache::remember($cacheName, now()->addDay(), function () use ($slug) {
+        return Cache::remember($cacheName, now()->addDay(3), function () use ($slug) {
             $crawler = $this->client->request('GET', (string) $this->baseUrl . "table.php?distribution=$slug");
 
             /**

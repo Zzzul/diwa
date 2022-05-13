@@ -46,15 +46,6 @@ class ParamsController extends Controller
         $this->baseUrl = config('app.distrowatch_url');
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/params/ranking",
-     *     tags={"Ranking"},
-     *     summary="Get all available parameters for filter the ranking (below ↓)",
-     *     operationId="GetAllAvailableParametersRanking",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     */
     public function rankingParams()
     {
         return Cache::rememberForever('rankingParams',  function () {
@@ -77,15 +68,6 @@ class ParamsController extends Controller
         });
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/params/news",
-     *     tags={"News"},
-     *     summary="Get all available parameters for filter the news (above ↑)",
-     *     operationId="GetAllAvailableParametersNews",
-     *     @OA\Response(response="200", description="Success")
-     * )
-     */
     public function newsParams()
     {
         return Cache::rememberForever('newsParams',  function () {

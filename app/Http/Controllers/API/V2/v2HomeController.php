@@ -11,22 +11,22 @@ class v2HomeController extends Controller
     /**
      * @OA\Get(
      *   path="/api/v2",
-     *   tags={"v2-Home"},
+     *   tags={"Home"},
      *   summary="Get all v2 avaiable endpoints",
      *   operationId="v2-ome",
      *   @OA\Response(response=200, description="success")
      * )
      *
      *  @OA\Tag(
-     *     name="v2-Home",
-     *     description="v2 home endpoints"
+     *     name="Home",
+     *     description="Home"
      * )
      */
     public function __invoke()
     {
         return response()->json([
             'message' => 'success',
-            'docs' => url('/documentation/v2'),
+            'docs' => url('/docs'),
             'source' => 'https://github.com/Zzzul/diwa',
             'endpoints' => [
                 'distributions' => [

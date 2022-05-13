@@ -8,33 +8,33 @@
         },
         "license": {
             "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
+            "url": "https://github.com/Zzzul/diwa/blob/main/LICENSE"
         },
-        "version": "1.0.0"
+        "version": "2.0"
     },
     "paths": {
-        "/api/distribution": {
+        "/api/v2/distributions": {
             "get": {
                 "tags": [
-                    "Distribution"
+                    "Distributions"
                 ],
                 "summary": "Get all Distribution",
                 "operationId": "getAllDistribution",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/distribution/{name}": {
+        "/api/v2/distributions/{name}": {
             "get": {
                 "tags": [
-                    "Distribution"
+                    "Distributions"
                 ],
                 "summary": "Get distribution information detail",
                 "description": "If {name} not found, will return 404",
-                "operationId": "getDistributionById",
+                "operationId": "findDistributionById",
                 "parameters": [
                     {
                         "name": "name",
@@ -49,174 +49,61 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/news": {
+        "/api/v2/params/rankings": {
             "get": {
                 "tags": [
-                    "News"
+                    "Rankings"
                 ],
-                "summary": "Get all distribution and weekly news",
-                "description": "Return latest 12 news and 1 sponsor news",
-                "operationId": "getAllDistributionNews",
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                }
-            }
-        },
-        "/api/news/{id}": {
-            "get": {
-                "tags": [
-                    "News"
-                ],
-                "summary": "Get Distribution News information detail",
-                "description": "If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct",
-                "operationId": "getDistributionNewsById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "News Id",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "example": "11302"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                }
-            }
-        },
-        "/api/filter/news": {
-            "get": {
-                "tags": [
-                    "News"
-                ],
-                "summary": "Get specific distribution news",
-                "description": "If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
-                "operationId": "FilterDistributionNews",
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "description": "Distribution Name",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "ubuntu"
-                    },
-                    {
-                        "name": "release",
-                        "in": "query",
-                        "description": "Release Version",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "stable"
-                    },
-                    {
-                        "name": "month",
-                        "in": "query",
-                        "description": "Month",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "all"
-                    },
-                    {
-                        "name": "year",
-                        "in": "query",
-                        "description": "Year",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "example": "2021"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                }
-            }
-        },
-        "/api": {
-            "get": {
-                "tags": [
-                    "Home"
-                ],
-                "summary": "Get all endpoints and info about this API",
-                "operationId": "home",
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                }
-            }
-        },
-        "/api/params/ranking": {
-            "get": {
-                "tags": [
-                    "Ranking"
-                ],
-                "summary": "Get all available parameters for filter the ranking (below ↓)",
+                "summary": "Get all available parameters for filter the rankings (below ↓)",
                 "operationId": "GetAllAvailableParametersRanking",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/params/news": {
+        "/api/v2/params/news": {
             "get": {
                 "tags": [
                     "News"
                 ],
-                "summary": "Get all available parameters for filter the news (above ↑)",
+                "summary": "Get all available parameters for filter the news (below ↓)",
                 "operationId": "GetAllAvailableParametersNews",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/ranking": {
+        "/api/v2/rankings": {
             "get": {
                 "tags": [
-                    "Ranking"
+                    "Rankings"
                 ],
-                "summary": "Get top 100 distribution ranking of last 6 months",
-                "operationId": "GetTop100Rangking",
+                "summary": "Get top 100 distributions rankings of last 6 months",
+                "operationId": "Top100Rangking",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/ranking/{slug}": {
+        "/api/v2/rankings/{slug}": {
             "get": {
                 "tags": [
-                    "Ranking"
+                    "Rankings"
                 ],
-                "summary": "Get top 100 distribution ranking but with parameter",
-                "description": "If {slug} not found, distrowatch.com will return the home page with default ranking(last 6 months). make sure {slug} is correct",
-                "operationId": "getRankingnByParams",
+                "summary": "Get top 100 distributions rankings with parameter",
+                "description": "If {slug} not found, distrowatch.com will return the home page with default rankings(last 6 months). make sure {slug} is correct",
+                "operationId": "findRankingnByParams",
                 "parameters": [
                     {
                         "name": "slug",
@@ -231,29 +118,29 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/params/search": {
+        "/api/v2/params/search": {
             "get": {
                 "tags": [
-                    "Distribution"
+                    "Distributions"
                 ],
                 "summary": "Get all available parameters for search the distribution (below ↓)",
                 "operationId": "GetAllAvailableParametersForSearch",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/search": {
+        "/api/v2/search": {
             "get": {
                 "tags": [
-                    "Distribution"
+                    "Distributions"
                 ],
                 "summary": "Get specific distribution",
                 "description": "If one of the {params} not found/empty, distrowatch.com will used default params(All)",
@@ -402,30 +289,30 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/weekly": {
+        "/api/v2/weekly": {
             "get": {
                 "tags": [
-                    "News"
+                    "Weekly News"
                 ],
                 "summary": "Get all weekly news",
                 "description": "Warning!, big size response",
                 "operationId": "getAllWeeklyNews",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
                     }
                 }
             }
         },
-        "/api/weekly/{id}": {
+        "/api/v2/weekly/{id}": {
             "get": {
                 "tags": [
-                    "News"
+                    "Weekly News"
                 ],
                 "summary": "Get weekly news information detail",
                 "description": "If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct",
@@ -439,12 +326,125 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "example": "20210719"
+                        "example": "20220502"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2": {
+            "get": {
+                "tags": [
+                    "Home"
+                ],
+                "summary": "Get all v2 avaiable endpoints",
+                "operationId": "v2-ome",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/news": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get all distribution and weekly news",
+                "description": "Return latest 12 news and 1 sponsor news",
+                "operationId": "getAllDistributionNews",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/news/{id}": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get Distribution News information detail",
+                "description": "If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct",
+                "operationId": "getDistributionNewsById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "News Id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": "11302"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/filter/news": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get specific distribution news",
+                "description": "If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
+                "operationId": "FilterDistributionNews",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Distribution Name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ubuntu"
+                    },
+                    {
+                        "name": "release",
+                        "in": "query",
+                        "description": "Release Version",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "stable"
+                    },
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Month",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "all"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Year",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": "2022"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
                     }
                 }
             }
@@ -452,23 +452,20 @@
     },
     "tags": [
         {
-            "name": "Distribution",
+            "name": "Distributions",
             "description": "API Endpoints of Distribution"
+        },
+        {
+            "name": "Rankings",
+            "description": "API Endpoints of Ranking"
+        },
+        {
+            "name": "Home",
+            "description": "Home"
         },
         {
             "name": "News",
             "description": "API Endpoints of News"
-        },
-        {
-            "name": "Home",
-            "description": "API Endpoints of Home"
-        },
-        {
-            "name": "Ranking",
-            "description": "API Endpoints of Ranking"
         }
-    ],
-    "security": [
-        []
     ]
 }

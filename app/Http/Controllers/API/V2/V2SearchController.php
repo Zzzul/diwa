@@ -37,7 +37,7 @@ class V2SearchController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/params/search",
-     *     tags={"Distribution"},
+     *     tags={"Distributions"},
      *     summary="Get all available parameters for search the distribution (below ↓)",
      *     operationId="GetAllAvailableParametersForSearch",
      *     @OA\Response(response="200", description="success")
@@ -60,7 +60,7 @@ class V2SearchController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/search",
-     *     tags={"v2-Distribution"},
+     *     tags={"Distributions"},
      *     summary="Get specific distribution",
      *     description="If one of the {params} not found/empty, distrowatch.com will used default params(All)",
      *     operationId="FilterDistribution",

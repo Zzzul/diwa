@@ -37,7 +37,7 @@ class V2WeeklyNewsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/weekly",
-     *     tags={"News"},
+     *     tags={"Weekly News"},
      *     summary="Get all weekly news",
      *     description="Warning!, big size response",
      *     operationId="getAllWeeklyNews",
@@ -46,7 +46,7 @@ class V2WeeklyNewsController extends Controller
      */
     public function index()
     {
-        return Cache::remember('weekly-news', now()->addDay(), function () {
+        return Cache::remember('weekly-news', now()->addDay(2), function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl . 'weekly.php');
 
             $news = $this->weeklyNewsService->getAllWeeklyNews($crawler);
@@ -62,7 +62,7 @@ class V2WeeklyNewsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/weekly/{id}",
-     *     tags={"News"},
+     *     tags={"Weekly News"},
      *     summary="Get weekly news information detail",
      *     description="If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct",
      *     operationId="getWeeklyNewsById",
@@ -79,7 +79,7 @@ class V2WeeklyNewsController extends Controller
      *     ),
      * )
      */
-    public function show($id)
+    public function show(int $id)
     {
         return Cache::rememberForever('weekly-news-' . $id, function () use ($id) {
             $crawler = $this->client->request('GET', (string) $this->baseUrl . "weekly.php?issue=$id");

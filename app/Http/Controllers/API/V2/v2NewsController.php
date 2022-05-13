@@ -38,7 +38,7 @@ class v2NewsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/news",
-     *     tags={"v2-News"},
+     *     tags={"News"},
      *     summary="Get all distribution and weekly news",
      *     operationId="getAllDistributionNews",
      *     description="Return latest 12 news and 1 sponsor news",
@@ -67,7 +67,7 @@ class v2NewsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/news/{id}",
-     *     tags={"v2-News"},
+     *     tags={"News"},
      *     summary="Get Distribution News information detail",
      *     description="If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct",
      *     operationId="getDistributionNewsById",
@@ -77,7 +77,7 @@ class v2NewsController extends Controller
      *          description="News Id",
      *          required=true,
      *          in="path",
-     *          example="11302",
+     *          example="11531",
      *          @OA\Schema(
      *              type="integer"
      *          )
@@ -91,25 +91,19 @@ class v2NewsController extends Controller
 
             $tableElement = $crawler->filter('.News1 > table')->eq(1);
             $tdElement = $crawler->filter('.Background > td');
-            $infoClassElement = $crawler->filter('.Info');
 
             return response()->json([
                 'message' => 'success',
+                'headline' => $this->newsService->getNewsHeadline($tableElement),
                 'news_url' => $this->newsService->getDistrowatchNewsUrl($tableElement),
-                'detail' => [
-                    'distribution' => [
-                        'distrowatch' => $this->newsService->getDistrowatchDistributionUrl($tableElement),
-                        'diwa' =>  $this->newsService->getDistributionDetailUrl(),
-                    ],
-                    'news' => [
-                        'headline' => $this->newsService->getNewsHeadline($tableElement),
-                        'date' => $this->newsService->getNewsDate($tableElement),
-                        'thumbnail' => $this->newsService->getNewsThumbnail($tableElement),
-                        'about' => $this->newsService->getAboutText($tdElement),
-                        'body' => $this->newsService->getNewsBody($tableElement),
-                    ],
+                'date' => $this->newsService->getNewsDate($tableElement),
+                'thumbnail' => $this->newsService->getNewsThumbnail($tableElement),
+                'about' => $this->newsService->getAboutText($tdElement),
+                'body' => $this->newsService->getNewsBody($tableElement),
+                'distribution' => [
+                    'distrowatch' => $this->newsService->getDistrowatchDistributionUrl($tableElement),
+                    'diwa' =>  $this->newsService->getDistributionDetailUrl(),
                 ],
-
             ], Response::HTTP_OK);
         });
     }
@@ -117,7 +111,7 @@ class v2NewsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/filter/news",
-     *     tags={"v2-News"},
+     *     tags={"News"},
      *     summary="Get specific distribution news",
      *     description="If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct",
      *     operationId="FilterDistributionNews",
@@ -157,7 +151,7 @@ class v2NewsController extends Controller
      *          description="Year",
      *          required=true,
      *          in="query",
-     *          example="2021",
+     *          example="2022",
      *          @OA\Schema(
      *              type="integer"
      *          )
@@ -171,11 +165,11 @@ class v2NewsController extends Controller
         $month = $request->month ?? 'all';
         $year = $request->year ?? 'all';
 
-        $cacheName = Str::camel($distribution . ' ' . $release . ' ' . $month . ' ' . $year);
+        $cacheName = Str::snake($distribution . ' ' . $release . ' ' . $month . ' ' . $year);
 
         $crawler = $this->client->request('GET', (string) $this->baseUrl . "?distribution=$distribution&release=$release&month=$month&year=$year");
 
-        return Cache::remember($cacheName, now()->addDay(2), function () use ($crawler) {
+        return Cache::remember($cacheName, now()->addDay(3), function () use ($crawler) {
             $news = $this->newsService->getNews($crawler->filter('.News1 > table'));
 
             return response()->json([

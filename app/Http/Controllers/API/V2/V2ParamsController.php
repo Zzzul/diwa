@@ -36,8 +36,8 @@ class V2ParamsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/params/rankings",
-     *     tags={"v2-Ranking"},
-     *     summary="Get all available parameters for filter the rankingss (below ↓)",
+     *     tags={"Rankings"},
+     *     summary="Get all available parameters for filter the rankings (below ↓)",
      *     operationId="GetAllAvailableParametersRanking",
      *     @OA\Response(response="200", description="success")
      * )
@@ -59,8 +59,8 @@ class V2ParamsController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v2/params/news",
-     *     tags={"v2-News"},
-     *     summary="Get all available parameters for filter the news (above ↑)",
+     *     tags={"News"},
+     *     summary="Get all available parameters for filter the news (below ↓)",
      *     operationId="GetAllAvailableParametersNews",
      *     @OA\Response(response="200", description="success")
      * )
