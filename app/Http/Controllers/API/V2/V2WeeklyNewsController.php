@@ -88,7 +88,7 @@ class V2WeeklyNewsController extends Controller
                 'message' => 'success',
                 'title' => $this->weeklyNewsService->getWeeklyNewsTitle($crawler),
                 'story' => $this->weeklyNewsService->getWeeklyNewsStory($crawler),
-                'content' => $this->weeklyNewsService->getWeeklyNewsContent($crawler)
+                'contents' => $this->weeklyNewsService->getWeeklyNewsContent($crawler)
             ], Response::HTTP_OK);
         });
     }

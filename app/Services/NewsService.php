@@ -35,7 +35,7 @@ class NewsService
                     // Weekly news
                     $newsDetailParams = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->attr('href');
 
-                    $this->newsDetailUrl = route("weekly.show", Str::after($newsDetailParams, 'weekly.php?issue='));
+                    $this->newsDetailUrl = route("v2.weekly.show", Str::after($newsDetailParams, 'weekly.php?issue='));
 
                     $this->distrowatchNewsUrl = $node->children()->filter('td')->nextAll()->filter('a')->nextAll()->link()->getUri();
 

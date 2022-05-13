@@ -44,7 +44,7 @@ class V2ParamsController extends Controller
      */
     public function rankings()
     {
-        return Cache::remember('v2-params-rangkings', now()->addYear(),  function () {
+        return Cache::remember('v2-params-rangkings', now()->addMonth(),  function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             $params = $this->paramService->getRankings($crawler->filter('select')->eq(5)->children());
@@ -67,7 +67,7 @@ class V2ParamsController extends Controller
      */
     public function news()
     {
-        return Cache::remember('v2-params-news', now()->addYear(),  function () {
+        return Cache::remember('v2-params-news', now()->addMonth(),  function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             $selectElement = $crawler->filter('.Introduction')->filter('select');
