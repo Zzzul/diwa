@@ -3355,6 +3355,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/26954b3d62a6c5fd0ea8a2a00c0353a14978d05c",
                 "reference": "26954b3d62a6c5fd0ea8a2a00c0353a14978d05c",
+
                 "shasum": ""
             },
             "require": {
@@ -3392,7 +3393,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.0.1"
+                  "source": "https://github.com/symfony/deprecation-contracts/tree/v3.0.1"
             },
             "funding": [
                 {
@@ -3408,6 +3409,7 @@
                     "type": "tidelift"
                 }
             ],
+
             "time": "2022-01-02T09:55:41+00:00"
         },
         {
@@ -3588,6 +3590,7 @@
                 "symfony/http-foundation": "^5.4|^6.0",
                 "symfony/service-contracts": "^1.1|^2|^3",
                 "symfony/stopwatch": "^5.4|^6.0"
+
             },
             "suggest": {
                 "symfony/dependency-injection": "",
@@ -5184,6 +5187,9 @@
             },
             "conflict": {
                 "symfony/translation-contracts": "<2.0"
+            },
+            "conflict": {
+                "symfony/translation-contracts": ">=3.0"
             },
             "require-dev": {
                 "symfony/error-handler": "^5.4|^6.0",

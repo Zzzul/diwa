@@ -29,7 +29,7 @@ For now, Diwa has a more than 10 routes to get the current data of distribution,
 | All News(Custom) | Get specific news | /api/news/filter/distribution={distribution}&release={release}&month={month}&year={year} <br><br> example: /api/news/filter/distribution=mx&release=stable&month=April&year=2021 <br><br> You can get all available parameters (below ↓)  | If one of the {params} not found, distrowatch.com will return the home page with default params(all). make sure all {params} are correct
 | News Params | Get all available parameters for News(Custom) | /api/params/news | -
 | News Detail | Get News information detail | /api/news/{news_id} <br><br> example: /api/news/11300 | If {news_id} not found, distrowatch.com will return the home page. make sure {news_id} is correct
-| Weekly News Detail | Get weekly news information detail | /api/weekly/{weekly_id} <br><br> example: /api/weekly/20210719 <br><br> You can get all available parameters (below ↓) | If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct
+| Weekly News Detail | Get weekly news information detail | /api/weekly/{weekly_id} <br><br> example: /api/weekly/20210719 | If {weekly_id} not found, distrowatch.com will return the latest weekly news. make sure {weekly_id} is correct
 | All Weekly News | Get all weekly news | /api/weekly | Warning!, big size response
 
 # Installation
