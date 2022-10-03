@@ -11,16 +11,18 @@ class HomeTest extends TestCase
     /**
      * @test
      */
-    public function home()
+    public function can_see_home_endpoint()
     {
+        $this->withoutDeprecationHandling();
         $this->get('/')
-            ->assertStatus(200);
+            ->assertStatus(200)
+            ->assertSeeText("success");
     }
 
     /**
      * @test
      */
-    public function api_v1()
+    public function can_see_api_v1_endpoint()
     {
         $this->get('/api')
             ->assertStatus(200);
@@ -29,7 +31,7 @@ class HomeTest extends TestCase
     /**
      * @test
      */
-    public function api_v2()
+    public function can_see_api_v2_endpoint()
     {
         $this->get('/api/v2/')
             ->assertStatus(200);

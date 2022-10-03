@@ -11,7 +11,7 @@ class RangkingTest extends TestCase
     /**
      * @test
      */
-    public function get_default_rankings()
+    public function can_get_rankings()
     {
         $this->get('/api/v2/rankings')
             ->assertStatus(200);
@@ -20,7 +20,7 @@ class RangkingTest extends TestCase
     /**
      * @test
      */
-    public function get_rankings_with_custom_params()
+    public function can_get_rankings_with_custom_params()
     {
         $this->get('/api/v2/rankings/trending-1')
             ->assertStatus(200);
@@ -29,7 +29,7 @@ class RangkingTest extends TestCase
     /**
      * @test
      */
-    public function get_all_rankings_params()
+    public function can_get_rankings_params()
     {
         $this->get('/api/v2/params/rankings/')
             ->assertStatus(200);

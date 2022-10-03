@@ -11,7 +11,7 @@ class WeeklyNewsTest extends TestCase
     /**
      * @test
      */
-    public function get_all_weekly_news()
+    public function can_get_weekly_news()
     {
         $this->get('/api/v2/weekly')
             ->assertStatus(200);
@@ -20,7 +20,7 @@ class WeeklyNewsTest extends TestCase
     /**
      * @test
      */
-    public function get_weekly_by_id()
+    public function can_get_weekly_news_by_id()
     {
         $this->get('/api/v2/weekly/20220502')
             ->assertStatus(200);
