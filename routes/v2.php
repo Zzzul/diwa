@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\V2\{V2DistributionController, v2NewsController, v2HomeController, V2RankingController,V2ParamsController, V2SearchController, V2WeeklyNewsController};
+use App\Http\Controllers\API\V2\{V2DistributionController, v2NewsController, v2HomeController, V2LatestDistributionController, V2RankingController,V2ParamsController, V2SearchController, V2WeeklyNewsController};
 
 Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/', v2HomeController::class)->name('home');
@@ -15,6 +15,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::apiResource('/weekly', V2WeeklyNewsController::class)->only('index', 'show');
 
     Route::get('/search', [V2SearchController::class, 'show'])->name('search.index');
+    Route::get('/latest-distributions', [V2LatestDistributionController::class, 'index'])->name('latest.distributions');
 
     Route::prefix('params')->group(function () {
         Route::get('/rankings', [V2ParamsController::class, 'rankings'])->name('params.rankings');

@@ -11,7 +11,7 @@ class RankingService
         public array $rankings = [],
         public string $distrowatch_distribution_detail_url = '',
         public string $distribution_detail_url = '',
-        public string $dataSpan = '',
+        public string $data_span = '',
     ) {
     }
 
@@ -42,10 +42,10 @@ class RankingService
     {
         $node->each(function ($node) use ($slug) {
             if ($node->attr('value') == $slug) {
-                $this->dataSpan = $node->text();
+                $this->data_span = $node->text();
             }
         });
 
-        return $this->dataSpan!= '' ? $this->dataSpan = $this->dataSpan : $this->dataSpan = 'Last 6 months';
+        return $this->data_span != '' ? $this->data_span = $this->data_span : $this->data_span = 'Last 6 months';
     }
 }
