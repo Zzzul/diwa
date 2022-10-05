@@ -11,6 +11,7 @@ class WeeklyNewsService
         public array $news = [],
         public array $content = [],
     ) {
+        //
     }
 
     public function getAllWeeklyNews(Crawler $crawler): array

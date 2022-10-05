@@ -7,8 +7,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class SearchService
 {
-    public function __construct(public array $params = [], public array $searchResults = [])
-    {
+    public function __construct(
+        public array $params = [],
+        public array $searchResults = []
+    ) {
+        //
     }
 
     public function getAll(Crawler $selectElement): array
