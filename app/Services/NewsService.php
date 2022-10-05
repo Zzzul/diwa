@@ -23,6 +23,7 @@ class NewsService
         public string|null $distrowatchDistributionUrl = null,
         public bool $sponsor = false,
     ) {
+        //
     }
 
     public function getNews(Crawler $crawler): array

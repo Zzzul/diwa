@@ -12,6 +12,7 @@ class ParamService
         public array $years = [],
         public array $months = []
     ) {
+        //
     }
 
     public function getRankings(Crawler $node): array
@@ -73,6 +74,6 @@ class ParamService
             ];
         });
 
-        return  $this->years;
+        return $this->years;
     }
 }

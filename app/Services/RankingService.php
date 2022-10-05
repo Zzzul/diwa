@@ -13,6 +13,7 @@ class RankingService
         public string $distribution_detail_url = '',
         public string $data_span = '',
     ) {
+        //
     }
 
     public function getAll(Crawler $node): array

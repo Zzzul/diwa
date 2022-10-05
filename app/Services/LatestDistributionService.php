@@ -7,29 +7,27 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class LatestDistributionService
 {
-    public function __construct(
-        public array $latest_distributions = [],
-    ) {
+    public function __construct(public array $latest_distributions = [])
+    {
         //
     }
 
-    public function getLatestDistributions(Crawler $crawler): array
+    public function get(Crawler $crawler): array
     {
         for ($i = 0; $i < $crawler->filter('tr')->count(); $i++) {
             if ($i >= 1) {
+
+                $filter = $crawler->filter('tr')->eq($i)->filter('td')->filter('a');
+
                 $this->latest_distributions[] = [
-                    'date' => $crawler->filter('tr')->eq($i)->filter('th')->html(),
-                    'distributions' => [
-                        'name' => $crawler->filter('tr')->eq($i)->filter('td')->filter('a')->text(),
-                        'detail' => [
-                            'diwa' => route('v2.distributions.show', Str::after($crawler->filter('tr')->eq($i)->filter('td')->filter('a')->link()->getUri(), '.com/')),
-                            'distrowatch' => $crawler->filter('tr')->eq($i)->filter('td')->filter('a')->link()->getUri(),
-                        ],
+                    'name' => $filter->text(),
+                    'released_date' => $crawler->filter('tr')->eq($i)->filter('th')->html(),
+                    'version' => $filter->eq(1)->text(),
+                    'download' => $filter->eq(1)->link()->getUri(),
+                    'detail' => [
+                        'diwa' => route('v2.distributions.show', Str::after($filter->link()->getUri(), '.com/')),
+                        'distrowatch' => $filter->link()->getUri(),
                     ],
-                    'version' => [
-                        'code' => $crawler->filter('tr')->eq($i)->filter('td')->filter('a')->eq(1)->text(),
-                        'download' => $crawler->filter('tr')->eq($i)->filter('td')->filter('a')->eq(1)->link()->getUri(),
-                    ]
                 ];
             }
         }
