@@ -4,16 +4,17 @@ namespace App\Http\Controllers\API\V2;
 
 use App\Http\Controllers\Controller;
 use App\Services\GoutteClientService;
-use App\Services\LatestPackageService;
+use App\Services\LatestReviewService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class V2LatestPackageController extends Controller
+class V2LatestReviewController extends Controller
 {
     /**
-     * @var LatestPackageService $latestPackageService
+     * @var LatestReviewService $latestReviewService
      */
-    public LatestPackageService $latestPackageService;
+    public LatestReviewService $latestReviewService;
 
     /**
      * @var client
@@ -25,19 +26,19 @@ class V2LatestPackageController extends Controller
      */
     public string $baseUrl;
 
-    public function __construct(GoutteClientService $goutteClientService, LatestPackageService $latestPackageService)
+    public function __construct(GoutteClientService $goutteClientService, LatestReviewService $latestReviewService)
     {
         $this->client = $goutteClientService->setup();
         $this->baseUrl = config('app.distrowatch_url');
-        $this->latestPackageService = $latestPackageService;
+        $this->latestReviewService = $latestReviewService;
     }
 
     /**
      * @OA\Get(
-     *     path="/api/v2/latest/packages",
+     *     path="/api/v2/latest/reviews",
      *     tags={"Latest Released"},
-     *     summary="Get latest packages",
-     *     operationId="getLatestPackages",
+     *     summary="Get latest reviews",
+     *     operationId="getLatestReviews",
      *     @OA\Response(response="200", description="success")
      * )
      *
@@ -48,12 +49,12 @@ class V2LatestPackageController extends Controller
      */
     public function __invoke()
     {
-        return Cache::remember('v2-latest-packages', now()->addDays(2), function () {
+        return Cache::remember('v2-latest-reviews', now()->addDay(), function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             return response()->json([
                 'message' => 'success',
-                'latest_packages' => $this->latestPackageService->get($crawler->filter('table.News')->eq(1)),
+                'latest_reviews' => $this->latestReviewService->get($crawler->filter('table.News')->eq(5)),
             ], Response::HTTP_OK);
         });
     }

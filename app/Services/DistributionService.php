@@ -173,9 +173,13 @@ class DistributionService
         return Str::remove('Popularity: ', $node->eq(1)->filter('li')->eq(7)->text());
     }
 
-    public function getHomepageUrl(Crawler $node): string
+    public function getHomepageUrl(Crawler $node): null|string
     {
-        return $node->eq(1)->filter('a')->link()->getUri();
+        try {
+            return $node->eq(1)->filter('a')->link()->getUri();
+        } catch (\Throwable $th) {
+            return null;
+        }
     }
 
     public function getMailingList(Crawler $node): string|null
@@ -281,15 +285,18 @@ class DistributionService
         return $this->reviews;
     }
 
-    public function checkScoreAndAverageRating(Crawler $node): string
+    public function checkScoreAndAverageRating(Crawler $node): ?string
     {
         if (count($node->filter('blockquote')->eq(0)->filter('div')->eq(2)) > 0) {
             $score = $node->filter('blockquote')->eq(0)->filter('div')->eq(2)->html();
         } else {
-            $score = $node->filter('blockquote')->eq(0)->filter('div')->html();
+            try {
+                $score = $node->filter('blockquote')->eq(0)->filter('div')->html();
+            } catch (\Throwable $th) {
+                $score = null;
+            }
         }
-
-        return $score . ' from ' . $node->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews';
+        return $score != null ? $score . ' from ' . $node->filter('blockquote')->eq(0)->filter('b')->eq(1)->text() . ' reviews' : null;
     }
 
     public function checkWhereToBuy(Crawler $node): mixed

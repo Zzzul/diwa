@@ -4,16 +4,16 @@ namespace App\Http\Controllers\API\V2;
 
 use App\Http\Controllers\Controller;
 use App\Services\GoutteClientService;
-use App\Services\LatestPackageService;
+use App\Services\LatestHeadlineService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class V2LatestPackageController extends Controller
+class V2LatestHeadlineController extends Controller
 {
-    /**
-     * @var LatestPackageService $latestPackageService
+        /**
+     * @var LatestHeadlineService $latestHeadlineService
      */
-    public LatestPackageService $latestPackageService;
+    public LatestHeadlineService $latestHeadlineService;
 
     /**
      * @var client
@@ -25,35 +25,30 @@ class V2LatestPackageController extends Controller
      */
     public string $baseUrl;
 
-    public function __construct(GoutteClientService $goutteClientService, LatestPackageService $latestPackageService)
+    public function __construct(GoutteClientService $goutteClientService, LatestHeadlineService $latestHeadlineService)
     {
         $this->client = $goutteClientService->setup();
         $this->baseUrl = config('app.distrowatch_url');
-        $this->latestPackageService = $latestPackageService;
+        $this->latestHeadlineService = $latestHeadlineService;
     }
 
     /**
      * @OA\Get(
-     *     path="/api/v2/latest/packages",
+     *     path="/api/v2/latest/headlines",
      *     tags={"Latest Released"},
-     *     summary="Get latest packages",
-     *     operationId="getLatestPackages",
+     *     summary="Get latest headlines",
+     *     operationId="getLatestheadlines",
      *     @OA\Response(response="200", description="success")
-     * )
-     *
-     *  @OA\Tag(
-     *     name="Latest Released",
-     *     description="API Endpoints of latest released"
      * )
      */
     public function __invoke()
     {
-        return Cache::remember('v2-latest-packages', now()->addDays(2), function () {
+        return Cache::remember('v2-latest-headlines', now()->addDay(), function () {
             $crawler = $this->client->request('GET', (string) $this->baseUrl);
 
             return response()->json([
                 'message' => 'success',
-                'latest_packages' => $this->latestPackageService->get($crawler->filter('table.News')->eq(1)),
+                'latest_headlines' => $this->latestHeadlineService->get($crawler->filter('table.News')->eq(4)),
             ], Response::HTTP_OK);
         });
     }

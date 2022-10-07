@@ -54,6 +54,90 @@
                 }
             }
         },
+        "/api/v2/latest/distributions": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest distributions",
+                "operationId": "getLatestDistributions",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/headlines": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest headlines",
+                "operationId": "getLatestheadlines",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/newsletters": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest newsletters",
+                "operationId": "getLatestNewsletters",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/packages": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest packages",
+                "operationId": "getLatestPackages",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/podcasts": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest podcasts",
+                "operationId": "getLatestpodcasts",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/reviews": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest reviews",
+                "operationId": "getLatestReviews",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/params/rankings": {
             "get": {
                 "tags": [
@@ -75,6 +159,20 @@
                 ],
                 "summary": "Get all available parameters for filter the news (below ↓)",
                 "operationId": "GetAllAvailableParametersNews",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/random": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get random distribution (result will reset every 1 hour)",
+                "operationId": "getRandomDistribution",
                 "responses": {
                     "200": {
                         "description": "success"
@@ -382,7 +480,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "example": "11302"
+                        "example": "11531"
                     }
                 ],
                 "responses": {
@@ -454,6 +552,18 @@
         {
             "name": "Distributions",
             "description": "API Endpoints of Distribution"
+        },
+        {
+            "name": "Latest Released",
+            "description": "API Endpoints of latest released"
+        },
+        {
+            "name": "Latest Released",
+            "description": "API Endpoints of latest released"
+        },
+        {
+            "name": "Latest Released",
+            "description": "API Endpoints of latest released"
         },
         {
             "name": "Rankings",
