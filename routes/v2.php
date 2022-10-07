@@ -7,6 +7,7 @@ use App\Http\Controllers\API\V2\{
     v2HomeController,
     V2LatestDistributionController,
     V2LatestHeadlineController,
+    V2LatestNewsletterController,
     V2LatestPackageController,
     V2LatestReviewController,
     V2RankingController,
@@ -33,6 +34,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::get('/packages', V2LatestPackageController::class)->name('latest.packages');
         Route::get('/headlines', V2LatestHeadlineController::class)->name('latest.headlines');
         Route::get('/reviews', V2LatestReviewController::class)->name('latest.reviews');
+        Route::get('/newsletters', V2LatestNewsletterController::class)->name('latest.newsletters');
     });
 
     Route::prefix('params')->group(function () {
