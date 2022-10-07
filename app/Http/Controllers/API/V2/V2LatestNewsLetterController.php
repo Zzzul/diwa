@@ -8,7 +8,7 @@ use App\Services\LatestNewsletterService;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class V2LatestNewsletterController extends Controller
+class V2LatestNewsLetterController extends Controller
 {
     /**
      * @var LatestNewsletterService $latestNewsletterService
