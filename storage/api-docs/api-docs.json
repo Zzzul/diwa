@@ -68,6 +68,20 @@
                 }
             }
         },
+        "/api/v2/latest/headlines": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest headlines",
+                "operationId": "getLatestheadlines",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/latest/packages": {
             "get": {
                 "tags": [
