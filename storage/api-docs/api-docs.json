@@ -96,6 +96,20 @@
                 }
             }
         },
+        "/api/v2/latest/reviews": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest reviews",
+                "operationId": "getLatestReviews",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/params/rankings": {
             "get": {
                 "tags": [
@@ -496,6 +510,10 @@
         {
             "name": "Distributions",
             "description": "API Endpoints of Distribution"
+        },
+        {
+            "name": "Latest Released",
+            "description": "API Endpoints of latest released"
         },
         {
             "name": "Latest Released",

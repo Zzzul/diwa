@@ -1,7 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\V2\{V2DistributionController, v2NewsController, v2HomeController, V2LatestDistributionController, V2LatestHeadlineController, V2LatestPackageController, V2RankingController,V2ParamsController, V2SearchController, V2WeeklyNewsController};
+use App\Http\Controllers\API\V2\{
+    V2DistributionController,
+    v2NewsController,
+    v2HomeController,
+    V2LatestDistributionController,
+    V2LatestHeadlineController,
+    V2LatestPackageController,
+    V2LatestReviewController,
+    V2RankingController,
+    V2ParamsController,
+    V2SearchController,
+    V2WeeklyNewsController
+};
 
 Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/', v2HomeController::class)->name('home');
@@ -20,6 +32,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::get('/distributions', V2LatestDistributionController::class)->name('latest.distributions');
         Route::get('/packages', V2LatestPackageController::class)->name('latest.packages');
         Route::get('/headlines', V2LatestHeadlineController::class)->name('latest.headlines');
+        Route::get('/reviews', V2LatestReviewController::class)->name('latest.reviews');
     });
 
     Route::prefix('params')->group(function () {
