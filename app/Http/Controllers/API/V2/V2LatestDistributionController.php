@@ -32,6 +32,15 @@ class V2LatestDistributionController extends Controller
         $this->baseUrl = config('app.distrowatch_url');
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v2/latest/distributions",
+     *     tags={"Latest Released"},
+     *     summary="Get latest distributions",
+     *     operationId="getLatestDistributions",
+     *     @OA\Response(response="200", description="success")
+     * )
+     */
     public function __invoke()
     {
         return Cache::remember('v2-latest-distirbutions', now()->addDays(2), function () {

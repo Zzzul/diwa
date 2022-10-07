@@ -32,6 +32,20 @@ class V2LatestPackageController extends Controller
         $this->latestPackageService = $latestPackageService;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v2/latest/packages",
+     *     tags={"Latest Released"},
+     *     summary="Get latest packages",
+     *     operationId="getLatestPackages",
+     *     @OA\Response(response="200", description="success")
+     * )
+     *
+     *  @OA\Tag(
+     *     name="Latest Released",
+     *     description="API Endpoints of latest released"
+     * )
+     */
     public function __invoke()
     {
         return Cache::remember('v2-latest-packages', now()->addDays(2), function () {

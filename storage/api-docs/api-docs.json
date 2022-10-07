@@ -54,6 +54,34 @@
                 }
             }
         },
+        "/api/v2/latest/distributions": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest distributions",
+                "operationId": "getLatestDistributions",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
+        "/api/v2/latest/packages": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest packages",
+                "operationId": "getLatestPackages",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/params/rankings": {
             "get": {
                 "tags": [
@@ -382,7 +410,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "example": "11302"
+                        "example": "11531"
                     }
                 ],
                 "responses": {
@@ -454,6 +482,10 @@
         {
             "name": "Distributions",
             "description": "API Endpoints of Distribution"
+        },
+        {
+            "name": "Latest Released",
+            "description": "API Endpoints of latest released"
         },
         {
             "name": "Rankings",
