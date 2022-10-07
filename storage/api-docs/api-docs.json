@@ -110,6 +110,20 @@
                 }
             }
         },
+        "/api/v2/latest/podcasts": {
+            "get": {
+                "tags": [
+                    "Latest Released"
+                ],
+                "summary": "Get latest podcasts",
+                "operationId": "getLatestpodcasts",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/latest/reviews": {
             "get": {
                 "tags": [

@@ -9,6 +9,7 @@ use App\Http\Controllers\API\V2\{
     V2LatestHeadlineController,
     V2LatestNewsletterController,
     V2LatestPackageController,
+    V2LatestPodcastController,
     V2LatestReviewController,
     V2RankingController,
     V2ParamsController,
@@ -35,6 +36,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::get('/headlines', V2LatestHeadlineController::class)->name('latest.headlines');
         Route::get('/reviews', V2LatestReviewController::class)->name('latest.reviews');
         Route::get('/newsletters', V2LatestNewsletterController::class)->name('latest.newsletters');
+        Route::get('/podcasts', V2LatestPodcastController::class)->name('latest.podcasts');
     });
 
     Route::prefix('params')->group(function () {
