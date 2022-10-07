@@ -166,6 +166,20 @@
                 }
             }
         },
+        "/api/v2/random": {
+            "get": {
+                "tags": [
+                    "Distributions"
+                ],
+                "summary": "Get random distribution (result will reset every 1 hour)",
+                "operationId": "getRandomDistribution",
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    }
+                }
+            }
+        },
         "/api/v2/rankings": {
             "get": {
                 "tags": [

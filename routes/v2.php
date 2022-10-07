@@ -13,6 +13,7 @@ use App\Http\Controllers\API\V2\{
     V2LatestReviewController,
     V2RankingController,
     V2ParamsController,
+    V2RandomDistributionController,
     V2SearchController,
     V2WeeklyNewsController
 };
@@ -29,6 +30,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::apiResource('/weekly', V2WeeklyNewsController::class)->only('index', 'show');
 
     Route::get('/search', [V2SearchController::class, 'show'])->name('search.index');
+
+    Route::get('/random', V2RandomDistributionController::class)->name('distributions.random');
 
     Route::prefix('latest')->group(function () {
         Route::get('/distributions', V2LatestDistributionController::class)->name('latest.distributions');
