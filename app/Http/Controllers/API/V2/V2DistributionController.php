@@ -54,7 +54,7 @@ class V2DistributionController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'distibutions' => $this->distributionService->getAllDistribution(
+                'distributions' => $this->distributionService->getAllDistribution(
                     node: $crawler->filter('select')->children(),
                     baseUrl: (string) $this->baseUrl
                 ),
