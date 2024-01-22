@@ -2,16 +2,10 @@
 <h1>Diwa: unofficiall Distrowatch API</h1>
 </div>
 
-Diwa is an open-source project and simple unofficial API from [Distrowatch](https://distrowatch.com/) site to get some public data of open-source operation systems like Linux, BSD, etc.
-
-# Demo 
-[Demo!](https://diwa.herokuapp.com/api/v2)
-
-# Docs 
-[Docs!](https://diwa.herokuapp.com/docs)
+Diwa is an open-source project and simple unofficial API from the [Distrowatch](https://distrowatch.com/) site to get some public data of open-source operation systems like Linux, BSD, etc.
 
 # Installation
-If you want to add this project in your own machine, you can install this project by following the step below
+If you want to add this project to your machine, you can install this project by following the steps below
 
 Clone or download this repository
 ```shell
@@ -36,11 +30,14 @@ $ php artisan key:generate
 $ php artisan serve
 ```
 
+# Docs 
+Go to `/docs`
+
 # Showcase
-If you use this API to your project application, you can register your project in this showcase below :
+If you use this API for your project application, you can register your project in this showcase below :
 
 # Contribution
-Want to make this project better? You can contribute this project, I am very open if there are contributions to this project.
+Want to make this project better? You can contribute to this project, I am very open if there are contributions to this project.
 
 # License
 [MIT License](./LICENSE)
