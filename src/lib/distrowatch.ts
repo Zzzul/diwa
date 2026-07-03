@@ -1,11 +1,12 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { $ } from 'bun'
+import puppeteer from 'puppeteer-core'
 import { getDb } from '../db/connection'
 import type { Ranking } from '../models/rankings'
 import type { News, NewsLink } from '../models/news'
 
 const DATA_DIR = resolve(import.meta.dir, '..', '..', 'data', 'distrowatch')
+const BROWSER_WS = 'ws://127.0.0.1:9222/devtools/browser'
 const ROW_RE = /<tr>[\s\S]*?<th class="phr1">(\d+)<\/th>[\s\S]*?<td class="phr2"><a title="Based on: ([^"]*)" href="([^"]*)">([^<]+)<\/a><\/td>[\s\S]*?<td class="phr3" title="Yesterday: (\d+)">(\d+)<img[^>]*alt="([^"]*)"[^>]*><\/td>[\s\S]*?<\/tr>/g
 
 function mapTrend(alt: string): string {
@@ -33,16 +34,6 @@ export function parseHtml(html: string): Ranking[] {
     })
   }
   return items
-}
-
-export async function fetchHtml(): Promise<string> {
-  const now = new Date()
-  const ts = now.toISOString().replace(/[:.]/g, '-')
-  mkdirSync(DATA_DIR, { recursive: true })
-  const outFile = `${DATA_DIR}/${ts}.html`
-  await $`mkdir -p ${DATA_DIR}`
-  await $`obscura fetch https://distrowatch.com --dump html --output ${outFile}`
-  return readFileSync(outFile, 'utf8')
 }
 
 export function insertDb(items: Ranking[]): void {
@@ -173,19 +164,35 @@ export function insertNews(items: News[]): void {
   tx(items)
 }
 
+export async function scrapeRankings(): Promise<Ranking[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseHtml(html)
+}
+
+export async function scrapeNews(): Promise<News[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseNewsHtml(html)
+}
+
 export async function fetchAndStoreNews(): Promise<News[]> {
-  const html = await fetchHtml()
-  const items = parseNewsHtml(html)
-  if (items.length === 0) throw new Error('no news data in fetched html')
+  const items = await scrapeNews()
+  if (items.length === 0) throw new Error('no news data scraped')
   saveJson(items, 'news')
   insertNews(items)
   return items
 }
 
 export async function fetchAndStore(): Promise<Ranking[]> {
-  const html = await fetchHtml()
-  const items = parseHtml(html)
-  if (items.length === 0) throw new Error('no ranking data in fetched html')
+  const items = await scrapeRankings()
+  if (items.length === 0) throw new Error('no ranking data scraped')
   saveJson(items)
   insertDb(items)
   return items

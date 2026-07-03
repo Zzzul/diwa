@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS _migrations (
 5. For each file, parse leading `NNNN_` as integer version.
 6. Skip if `version` already in `_migrations`.
 7. Execute file contents in a transaction using `BEGIN` / `COMMIT` /
-   `ROLLBACK` via `db.exec()` (bun:sqlite has no multi-statement transaction
+   `ROLLBACK` via `db.run()` (bun:sqlite has no multi-statement transaction
    helper — manual BEGIN/COMMIT is the supported pattern).
 8. Insert `(version, name, applied_at=ISO_NOW)` row.
 9. Log `[migrate] applied 0001_initial` per applied file.
@@ -142,19 +142,19 @@ this spec).
 
 - `Ranking` type
 - `findLatest(opts: { limit?: number; slug?: string }): Ranking[]`
-  - ORDER BY scraped_at DESC, rank ASC
-  - WHERE slug = ? if slug given
-  - LIMIT ? (default 100, cap 500)
+    - ORDER BY scraped_at DESC, rank ASC
+    - WHERE slug = ? if slug given
+    - LIMIT ? (default 100, cap 500)
 - `findBySlug(slug: string, limit = 50): Ranking[]`
-  - all snapshots for slug, newest first
+    - all snapshots for slug, newest first
 
 **`src/models/news.ts`**
 
 - `News` type
 - `findLatest(opts: { limit?: number; type?: string; date?: string }): News[]`
-  - ORDER BY scraped_at DESC, id DESC
-  - WHERE type = ? / date = ? as given
-  - LIMIT ? (default 50, cap 200)
+    - ORDER BY scraped_at DESC, id DESC
+    - WHERE type = ? / date = ? as given
+    - LIMIT ? (default 50, cap 200)
 - `findById(id: number): News | null`
 
 ## Controllers
@@ -210,18 +210,18 @@ app.notFound((c) => c.json({ error: 'not found' }, 404))
 `index.ts`:
 
 ```ts
-export { default } from './app'
+export { default } from "./app";
 ```
 
 ## package.json Scripts
 
 ```json
 {
-  "scripts": {
-    "dev":       "bun run --hot src/index.ts",
-    "db:migrate": "bun run src/db/migrate.ts",
-    "db:reset":   "rm -rf data && bun run db:migrate"
-  }
+    "scripts": {
+        "dev": "bun run --hot src/index.ts",
+        "db:migrate": "bun run src/db/migrate.ts",
+        "db:reset": "rm -rf data && bun run db:migrate"
+    }
 }
 ```
 
