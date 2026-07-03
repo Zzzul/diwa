@@ -1,14 +1,17 @@
 {
-  "name": "diwa",
-  "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "db:migrate": "bun run src/db/migrate.ts",
-    "db:reset": "rm -rf data && bun run db:migrate"
-  },
-  "dependencies": {
-    "hono": "^4.12.27"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  }
+    "name": "diwa",
+    "scripts": {
+        "dev": "bun run src/db/fresh.ts && bun run src/db/migrate.ts && bun run --hot src/index.ts",
+        "db:migrate": "bun run src/db/migrate.ts",
+        "db:fresh": "bun run src/db/fresh.ts && bun run src/db/migrate.ts",
+        "db:reset": "rm -rf data && bun run db:migrate",
+        "scrape:distrowatch": "bun run src/scrapers/distrowatch.ts",
+        "scrape:rankings": "bun run src/scrapers/parse-rankings.ts"
+    },
+    "dependencies": {
+        "hono": "^4.12.27"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    }
 }

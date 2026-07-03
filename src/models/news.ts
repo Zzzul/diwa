@@ -1,9 +1,15 @@
 import { getDb } from '../db/connection'
 
+export type NewsLink = {
+  url: string | null
+  text: string
+  href: string | null
+}
+
 export type News = {
   id: number
   date: string | null
-  is_new: number | null
+  is_new: boolean | null
   type: string | null
   headline: string | null
   headline_slug: string | null
@@ -13,21 +19,21 @@ export type News = {
   rating: number | null
   text: string | null
   text_html: string | null
-  links: string[]
+  links: NewsLink[]
   scraped_at: string
 }
 
-type Row = Omit<News, 'links'> & { links: string }
+type Row = Omit<News, 'links' | 'is_new'> & { links: string; is_new: number | null }
 
 function hydrate(row: Row): News {
-  let links: string[]
+  let links: NewsLink[]
   try {
     const v = JSON.parse(row.links)
     links = Array.isArray(v) ? v : []
   } catch {
     links = []
   }
-  return { ...row, links }
+  return { ...row, links, is_new: row.is_new ? true : false }
 }
 
 export function findLatest(opts: {
@@ -47,7 +53,7 @@ export function findLatest(opts: {
     params.push(opts.date)
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
-  const sql = `SELECT * FROM news ${whereSql} ORDER BY scraped_at DESC, id DESC LIMIT ?`
+  const sql = `SELECT * FROM news ${whereSql} ORDER BY scraped_at DESC, id ASC LIMIT ?`
   const rows = db.query<Row, [...string[], number]>(sql).all(...params, opts.limit)
   return rows.map(hydrate)
 }

@@ -4,10 +4,14 @@ import newsRouter from './routes/news'
 
 const app = new Hono()
 
-app.get('/healthz', (c) => c.json({ ok: true }))
+const api = new Hono()
 
-app.route('/rankings', rankingsRouter)
-app.route('/news', newsRouter)
+api.get('/healthz', (c) => c.json({ ok: true }))
+
+api.route('/rankings', rankingsRouter)
+api.route('/news', newsRouter)
+
+app.route('/api', api)
 
 app.notFound((c) => c.json({ error: 'not found' }, 404))
 app.onError((err, c) => {

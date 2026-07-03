@@ -1,11 +1,22 @@
 import type { Context } from 'hono'
 import { findLatest, findBySlug } from '../models/rankings'
 import { parseLimit } from '../lib/parse'
+import { fetchAndStore } from '../lib/distrowatch'
 
-export function list(c: Context) {
+export async function list(c: Context) {
   const limit = parseLimit(c.req.query('limit'), 100, 500)
   const slug = c.req.query('slug') || undefined
-  const data = findLatest({ limit, slug })
+  let data = findLatest({ limit, slug })
+
+  if (data.length === 0) {
+    try {
+      await fetchAndStore()
+      data = findLatest({ limit, slug })
+    } catch (err) {
+      return c.json({ error: 'fetch failed', detail: String(err) }, 502)
+    }
+  }
+
   return c.json({ data, count: data.length })
 }
 
