@@ -1,7 +1,9 @@
 {
   "name": "diwa",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:reset": "rm -rf data && bun run db:migrate"
   },
   "dependencies": {
     "hono": "^4.12.27"
