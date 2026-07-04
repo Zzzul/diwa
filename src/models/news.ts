@@ -7,7 +7,7 @@ export type NewsLink = {
 }
 
 export type News = {
-  id: number
+  id: string
   date: string | null
   is_new: boolean | null
   type: string | null
@@ -58,8 +58,8 @@ export function findLatest(opts: {
   return rows.map(hydrate)
 }
 
-export function findById(id: number): News | null {
+export function findById(id: string): News | null {
   const db = getDb()
-  const row = db.query<Row, [number]>('SELECT * FROM news WHERE id = ?').get(id)
+  const row = db.query<Row, [string]>('SELECT * FROM news WHERE id = ?').get(id)
   return row ? hydrate(row) : null
 }

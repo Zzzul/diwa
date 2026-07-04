@@ -1,7 +1,7 @@
 {
     "name": "diwa",
     "scripts": {
-        "dev": "bun run src/db/fresh.ts && bun run src/db/migrate.ts && bun run --hot src/index.ts",
+        "dev": "bun run src/db/migrate.ts && bun run --hot src/index.ts",
         "db:migrate": "bun run src/db/migrate.ts",
         "db:fresh": "bun run src/db/fresh.ts && bun run src/db/migrate.ts",
     "db:reset": "rm -rf data && bun run db:migrate"

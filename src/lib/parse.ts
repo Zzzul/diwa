@@ -8,3 +8,7 @@ export function parseLimit(
   if (!Number.isFinite(n) || n < 1) return def
   return Math.min(n, max)
 }
+
+export function isDev(): boolean {
+  return process.env.NODE_ENV !== 'production'
+}

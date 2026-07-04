@@ -1,7 +1,7 @@
 import { getDb } from '../db/connection'
 
 export type Ranking = {
-  id: number
+  id: string
   rank: number
   name: string
   slug: string

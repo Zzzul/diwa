@@ -1,12 +1,14 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { randomUUIDv7 } from 'bun'
 import puppeteer from 'puppeteer-core'
 import { getDb } from '../db/connection'
 import type { Ranking } from '../models/rankings'
 import type { News, NewsLink } from '../models/news'
 
 const DATA_DIR = resolve(import.meta.dir, '..', '..', 'data', 'distrowatch')
-const BROWSER_WS = 'ws://127.0.0.1:9222/devtools/browser'
+const BROWSER_WS = process.env.BROWSER_WS || 'ws://127.0.0.1:9222/devtools/browser'
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:3000'
 const ROW_RE = /<tr>[\s\S]*?<th class="phr1">(\d+)<\/th>[\s\S]*?<td class="phr2"><a title="Based on: ([^"]*)" href="([^"]*)">([^<]+)<\/a><\/td>[\s\S]*?<td class="phr3" title="Yesterday: (\d+)">(\d+)<img[^>]*alt="([^"]*)"[^>]*><\/td>[\s\S]*?<\/tr>/g
 
 function mapTrend(alt: string): string {
@@ -22,7 +24,7 @@ export function parseHtml(html: string): Ranking[] {
   while ((m = ROW_RE.exec(html)) !== null) {
     const basedOn = m[2].split(',').map((s) => s.trim()).filter(Boolean)
     items.push({
-      id: 0,
+      id: randomUUIDv7(),
       rank: Number(m[1]),
       name: m[4],
       slug: m[3],
@@ -39,11 +41,11 @@ export function parseHtml(html: string): Ranking[] {
 export function insertDb(items: Ranking[]): void {
   const db = getDb()
   const stmt = db.prepare(
-    'INSERT INTO rankings (rank, name, slug, based_on, hpd, yesterday, trend, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO rankings (id, rank, name, slug, based_on, hpd, yesterday, trend, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
   )
   const tx = db.transaction((rows: Ranking[]) => {
     for (const r of rows) {
-      stmt.run(r.rank, r.name, r.slug, JSON.stringify(r.based_on), r.hpd, r.yesterday, r.trend, r.scraped_at)
+      stmt.run(r.id, r.rank, r.name, r.slug, JSON.stringify(r.based_on), r.hpd, r.yesterday, r.trend, r.scraped_at)
     }
   })
   tx(items)
@@ -100,9 +102,9 @@ function parseAnnouncements(html: string, now: string): News[] {
     const idMatch = rawUrl.match(/(\d+)$/)
     const distroMatch = rawUrl.match(/[?&]distribution=([a-z0-9]+)/i)
     const headlineSlug = idMatch
-      ? `http://localhost:3000/api/news/${idMatch[1]}`
+      ? `${API_BASE}/api/news/${idMatch[1]}`
       : distroMatch
-        ? `http://localhost:3000/api/news/${distroMatch[1]}`
+        ? `${API_BASE}/api/news/${distroMatch[1]}`
         : rawUrl
     const headlineUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://distrowatch.com/${rawUrl.replace(/^\//, '')}`
 
@@ -126,7 +128,7 @@ function parseAnnouncements(html: string, now: string): News[] {
     }
 
     items.push({
-      id: 0,
+      id: randomUUIDv7(),
       date: dateM ? dateM[1].trim() || null : null,
       is_new: newM ? true : false,
       type: typeFromHeadline(headline),
@@ -153,15 +155,297 @@ export function parseNewsHtml(html: string): News[] {
 export function insertNews(items: News[]): void {
   const db = getDb()
   const stmt = db.prepare(
-    'INSERT INTO news (date, is_new, type, headline, headline_slug, headline_url, logo, screenshot, rating, text, text_html, links, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO news (id, date, is_new, type, headline, headline_slug, headline_url, logo, screenshot, rating, text, text_html, links, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   )
   const tx = db.transaction((rows: News[]) => {
     for (const r of rows) {
-      stmt.run(r.date, r.is_new ? 1 : 0, r.type, r.headline, r.headline_slug, r.headline_url,
+      stmt.run(r.id, r.date, r.is_new ? 1 : 0, r.type, r.headline, r.headline_slug, r.headline_url,
         r.logo, r.screenshot, r.rating, r.text, r.text_html, JSON.stringify(r.links), r.scraped_at)
     }
   })
   tx(items)
+}
+
+export type DistributionLink = {
+  text: string
+  url: string
+}
+
+export type DistroItem = {
+  id?: string
+  slug: string
+  name: string
+}
+
+export type ReviewLink = {
+  url: string
+  title: string
+  language: string | null
+}
+
+export type ReaderReview = {
+  version: string | null
+  rating: number | null
+  date: string | null
+  country: string | null
+  votes: number | null
+  text: string | null
+}
+
+export type Distribution = {
+  id?: string
+  name: string | null
+  slug: string
+  logo: string | null
+  screenshot: string | null
+  last_update: string | null
+  os_type: string | null
+  based_on: DistributionLink[]
+  origin: string | null
+  architecture: string[]
+  desktop: string[]
+  category: string[]
+  status: string | null
+  popularity: { rank: number | null; hpd: number | null }
+  description: string | null
+  rating: number | null
+  reviews_count: number | null
+  home_page: string | null
+  user_forums: string | null
+  documentation: string | null
+  screenshots: string | null
+  download_mirrors: string | null
+  bug_tracker: string | null
+  reviews: { version: string; links: ReviewLink[] }[]
+  where_to_donate: DistributionLink[]
+  related_websites: DistributionLink[]
+  reader_reviews: ReaderReview[]
+  recent_releases: { date: string; id: string; title: string }[]
+  recent_headlines: { date: string; url: string; title: string }[]
+  scraped_at: string
+}
+
+function parseDistribution(html: string, slug: string): Distribution {
+  const now = new Date().toISOString()
+
+  const nameM = html.match(/<h1>([^<]+)<\/h1>/)
+  const logoM = html.match(/<img[^>]*src="([^"]+)"[^>]*class="logo"/) || html.match(/<img[^>]*class="logo"[^>]*src="([^"]+)"/)
+  const screenshotM = html.match(/<a href="(images\/slinks\/[^"]+)">/)
+  const updateM = html.match(/<h2>Last Update:\s*([^<]+)<\/h2>/)
+
+  const osTypeM = html.match(/<li><b>OS Type:<\/b>\s*<a[^>]*>([^<]+)<\/a>/)
+  const originM = html.match(/<li><b>Origin:<\/b>\s*<a[^>]*>([^<]+)<\/a>/)
+  const statusM = html.match(/<li><b>Status:<\/b>\s*<font[^>]*>([^<]+)<\/font>/)
+  const popularityM = html.match(/<b>Popularity:<\/b>\s*<a[^>]*>(\d+)\s*\(([^)]+)\)<\/a>/)
+
+  const basedOn: DistributionLink[] = []
+  const basedRe = /<li><b>Based on:<\/b>([\s\S]*?)<\/li>/
+  const basedSection = html.match(basedRe)
+  if (basedSection) {
+    const linkRe = /<a\s+href="([^"]*)"[^>]*>([^<]+)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = linkRe.exec(basedSection[1])) !== null) {
+      basedOn.push({ text: m[2].trim(), url: `https://distrowatch.com/${m[1].replace(/^\//, '')}` })
+    }
+  }
+
+  const arch: string[] = []
+  const archRe = /<li><b>Architecture:<\/b>([\s\S]*?)<\/li>/
+  const archSection = html.match(archRe)
+  if (archSection) {
+    const linkRe = /<a[^>]*>([^<]+)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = linkRe.exec(archSection[1])) !== null) {
+      arch.push(m[1].trim())
+    }
+  }
+
+  const desktop: string[] = []
+  const deskRe = /<li><b>Desktop:<\/b>([\s\S]*?)<\/li>/
+  const deskSection = html.match(deskRe)
+  if (deskSection) {
+    const linkRe = /<a[^>]*>([^<]+)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = linkRe.exec(deskSection[1])) !== null) {
+      desktop.push(m[1].trim())
+    }
+  }
+
+  const category: string[] = []
+  const catRe = /<li><b>Category:<\/b>([\s\S]*?)<\/li>/
+  const catSection = html.match(catRe)
+  if (catSection) {
+    const linkRe = /<a[^>]*>([^<]+)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = linkRe.exec(catSection[1])) !== null) {
+      category.push(m[1].trim())
+    }
+  }
+
+  const titleSection = html.match(/<td class="TablesTitle">([\s\S]*?)<\/td>/)
+  const titleHtml = titleSection ? titleSection[1] : ''
+
+  const descM = titleHtml.match(/<\/ul>\s*([\s\S]*?)<br>\s*<br>\s*<b>/)
+  const desc = descM ? stripHtml(descM[1]).trim() || null : null
+
+  const ratingM = html.match(/Average visitor rating<\/a><\/b>: <b>([\d.]+)<\/b>\/10 from <b>(\d+)<\/b>/)
+
+  const summary: Record<string, string> = {}
+  const summaryHtml: Record<string, string> = {}
+  const summaryRe = /<th class="Info">([^<]+)<\/th>\s*<td class="Info">([\s\S]*?)<\/td>/g
+  let sm: RegExpExecArray | null
+  while ((sm = summaryRe.exec(html)) !== null) {
+    const label = sm[1].trim()
+    summaryHtml[label] = sm[2]
+    summary[label] = stripHtml(sm[2])
+  }
+
+  const reviews: { version: string; links: ReviewLink[] }[] = []
+  const reviewsRaw = summaryHtml['Reviews'] || ''
+  if (reviewsRaw) {
+    const linkRe = /<a\s+href="([^"]*)"[^>]*>([^<]+)<\/a>\s*(?:\(([^)]*)\))?/g
+    const lines = reviewsRaw.split(/<br>\s*/).filter((l: string) => l.trim())
+    for (const line of lines) {
+      const vlM = line.match(/^(?:<b>)?([^<:]+?)(?:<\/b>)?:\s*/)
+      const version = vlM ? stripHtml(vlM[1]).trim().replace(/["']/g, '') : null
+      if (!version) continue
+      const links: ReviewLink[] = []
+      let lm: RegExpExecArray | null
+      while ((lm = linkRe.exec(line)) !== null) {
+        links.push({
+          url: lm[1].startsWith('http') ? lm[1] : `https://distrowatch.com/${lm[1].replace(/^\//, '')}`,
+          title: lm[2].trim(),
+          language: lm[3]?.trim() || null,
+        })
+      }
+      if (links.length > 0) reviews.push({ version, links })
+    }
+  }
+
+  function parseLinksFromHtml(raw: string): DistributionLink[] {
+    const result: DistributionLink[] = []
+    const lr = /<a\s+href="([^"]*)"[^>]*>([^<]+)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = lr.exec(raw)) !== null) {
+      const href = m[1]
+      result.push({
+        url: href.startsWith('http') ? href : `https://distrowatch.com/${href.replace(/^\//, '')}`,
+        text: m[2].trim(),
+      })
+    }
+    return result
+  }
+
+  const whereToDonate = parseLinksFromHtml(summaryHtml['Where To Donate, Buy or Try'] || '')
+  const relatedWebsites = parseLinksFromHtml(summaryHtml['Related Websites'] || '')
+
+  const readerReviews: ReaderReview[] = []
+  const ratingsSection = html.match(/Reader Ratings<\/th>([\s\S]*?)<\/table>\s*\n\s*<\/blockquote>/)
+  if (ratingsSection) {
+    const reviewRe = /<tr style="outline:\s*thin\s*solid\s*black">([\s\S]*?)<\/tr>/g
+    let rr: RegExpExecArray | null
+    while ((rr = reviewRe.exec(ratingsSection[1])) !== null) {
+      const row = rr[1]
+      const vM = row.match(/<b>Version:<\/b>\s*([^<]*)/)
+      const rM = row.match(/<b>Rating:<\/b>\s*(\d+)/)
+      const dM = row.match(/<b>Date:<\/b>\s*([^<]*)/)
+      const cM = row.match(/<b>Country:<\/b>\s*([^<]*)/)
+      const voM = row.match(/<b>Votes:<\/b>\s*(\d+)/)
+      const tds = row.match(/<td[^>]*>([\s\S]*?)<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/)
+      const raw = tds ? stripHtml(tds[2]).trim() || null : null
+      const text = raw ? raw.replace(/\s*Was this review helpful\?.*/, '').trim() || null : null
+
+      if (vM || rM || dM) {
+        readerReviews.push({
+          version: vM ? vM[1].trim() || null : null,
+          rating: rM ? Number(rM[1]) : null,
+          date: dM ? dM[1].trim() || null : null,
+          country: cM ? cM[1].trim() || null : null,
+          votes: voM ? Number(voM[1]) : null,
+          text,
+        })
+      }
+    }
+  }
+
+  const releases: { date: string; id: string; title: string }[] = []
+  const relRe = /•\s*(\d{4}-\d{2}-\d{2}):\s*<a\s+href="(\d+)">([^<]+)<\/a>/g
+  let rm: RegExpExecArray | null
+  while ((rm = relRe.exec(html)) !== null) {
+    releases.push({ date: rm[1], id: rm[2], title: rm[3].trim() })
+  }
+
+  const headlines: { date: string; url: string; title: string }[] = []
+  const hlRe = /•\s*(\d{4}-\d{2}-\d{2})\s*<a\s+href="([^"]+)">([^<]+)<\/a>/g
+  let hm: RegExpExecArray | null
+  while ((hm = hlRe.exec(html)) !== null) {
+    headlines.push({
+      date: hm[1],
+      url: `https://distrowatch.com/${hm[2].replace(/^\//, '')}`,
+      title: hm[3].trim(),
+    })
+  }
+
+  return {
+    id: randomUUIDv7(),
+    name: nameM ? nameM[1].trim() : null,
+    slug,
+    logo: logoM ? `https://distrowatch.com/${logoM[1].replace(/^\//, '')}` : null,
+    screenshot: screenshotM ? `https://distrowatch.com/${screenshotM[1].replace(/^\//, '')}` : null,
+    last_update: updateM ? updateM[1].trim() : null,
+    os_type: osTypeM ? osTypeM[1].trim() : null,
+    based_on: basedOn,
+    origin: originM ? originM[1].trim() : null,
+    architecture: arch,
+    desktop,
+    category,
+    status: statusM ? statusM[1].trim() : null,
+    popularity: popularityM ? { rank: Number(popularityM[1]), hpd: Number(popularityM[2].replace(/[^0-9]/g, '')) } : { rank: null, hpd: null },
+    description: desc,
+    rating: ratingM ? Number(ratingM[1]) : null,
+    reviews_count: ratingM ? Number(ratingM[2]) : null,
+    home_page: summary['Home Page'] || null,
+    user_forums: summary['User Forums'] || null,
+    documentation: summary['Documentation'] || null,
+    screenshots: summary['Screenshots'] || null,
+    download_mirrors: summary['Download Mirrors'] || null,
+    bug_tracker: summary['Bug Tracker'] || null,
+    reviews,
+    where_to_donate: whereToDonate,
+    related_websites: relatedWebsites,
+    reader_reviews: readerReviews,
+    recent_releases: releases,
+    recent_headlines: headlines,
+    scraped_at: now,
+  }
+}
+
+export async function scrapeDistribution(slug: string): Promise<Distribution> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto(`https://distrowatch.com/table.php?distribution=${slug}`, { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseDistribution(html, slug)
+}
+
+export async function scrapeDistroList(): Promise<DistroItem[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+
+  const items: DistroItem[] = []
+  const section = html.match(/<select\s+name="distribution">([\s\S]*?)<\/select>/i)
+  if (!section) return items
+  const optRe = /<option value="([^"]+)">([^<]+)<\/option>/g
+  let m: RegExpExecArray | null
+  while ((m = optRe.exec(section[1])) !== null) {
+    if (!m[1] || m[1] === 'all') continue
+    items.push({ id: randomUUIDv7(), slug: m[1], name: m[2].trim().replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") })
+  }
+  return items
 }
 
 export async function scrapeRankings(): Promise<Ranking[]> {
