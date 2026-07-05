@@ -217,6 +217,17 @@ export type DistributionLink = {
   url: string
 }
 
+export type LatestDist = {
+  id: string
+  date: string
+  slug: string
+  name: string
+  description: string | null
+  download_url: string
+  version: string
+  scraped_at: string
+}
+
 export type DistroItem = {
   id?: string
   slug: string
@@ -483,6 +494,38 @@ export async function scrapeDistribution(slug: string): Promise<Distribution> {
   const html = await page.content()
   await browser.disconnect()
   return parseDistribution(html, slug)
+}
+
+export function parseLatestDistributions(html: string): LatestDist[] {
+  const now = new Date().toISOString()
+  const year = new Date().getFullYear()
+  const items: LatestDist[] = []
+  const section = html.match(/Latest Distributions\s*<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<tr>\s*<th class="News">([^<]+)<\/th>\s*<td class="News"><a title="([^"]*)" href="([^"]+)">([^<]+)<\/a>\s*•\s*<a href="([^"]+)">([^<]+)<\/a><\/td>\s*<\/tr>/g
+  let m: RegExpExecArray | null
+  while ((m = rowRe.exec(section[1])) !== null) {
+    items.push({
+      id: randomUUIDv7(),
+      date: `${year}-${m[1]}`,
+      slug: `${API_BASE}/api/distributions/${m[3]}`,
+      name: m[4],
+      description: m[2] || null,
+      download_url: m[5],
+      version: m[6],
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeLatestDistributions(): Promise<LatestDist[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseLatestDistributions(html)
 }
 
 export async function scrapeDistroList(): Promise<DistroItem[]> {
