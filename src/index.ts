@@ -2,14 +2,12 @@ import { Hono } from "hono";
 import rankings from "./routes/rankings";
 import news from "./routes/news";
 import distributions from "./routes/distributions";
-import distributionsList from "./routes/distributions-list";
 
 const app = new Hono();
 
 app.get("/api/healthz", (c) => c.json({ ok: true }));
 app.route("/api/rankings", rankings);
 app.route("/api/news", news);
-app.route("/api/distributions", distributionsList);
 app.route("/api/distributions", distributions);
 
 app.notFound((c) => c.json({ error: "not found" }, 404));

@@ -1,0 +1,1 @@
+ALTER TABLE rankings ADD COLUMN dataspan TEXT NOT NULL DEFAULT '26';

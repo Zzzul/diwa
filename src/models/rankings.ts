@@ -10,6 +10,7 @@ export type Ranking = {
   yesterday: number | null
   trend: string | null
   scraped_at: string
+  dataspan: string
 }
 
 type Row = Omit<Ranking, 'based_on'> & { based_on: string }
@@ -25,21 +26,22 @@ function hydrate(row: Row): Ranking {
   return { ...row, based_on }
 }
 
-export function findLatest(opts: { limit: number; slug?: string }): Ranking[] {
+export function findLatest(opts: { limit: number; slug?: string; dataspan?: string }): Ranking[] {
   const db = getDb()
+  const ds = opts.dataspan || '26'
   if (opts.slug) {
     const rows = db
-      .query<Row, [string, number]>(
-        'SELECT * FROM rankings WHERE slug = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
+      .query<Row, [string, string, number]>(
+        'SELECT * FROM rankings WHERE slug = ? AND dataspan = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
       )
-      .all(opts.slug, opts.limit)
+      .all(opts.slug, ds, opts.limit)
     return rows.map(hydrate)
   }
   const rows = db
-    .query<Row, [number]>(
-      'SELECT * FROM rankings ORDER BY scraped_at DESC, rank ASC LIMIT ?'
+    .query<Row, [string, number]>(
+      'SELECT * FROM rankings WHERE dataspan = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
     )
-    .all(opts.limit)
+    .all(ds, opts.limit)
   return rows.map(hydrate)
 }
 

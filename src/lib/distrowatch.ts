@@ -11,13 +11,16 @@ const BROWSER_WS = process.env.BROWSER_WS || 'ws://127.0.0.1:9222/devtools/brows
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:3000'
 const ROW_RE = /<tr>[\s\S]*?<th class="phr1">(\d+)<\/th>[\s\S]*?<td class="phr2"><a title="Based on: ([^"]*)" href="([^"]*)">([^<]+)<\/a><\/td>[\s\S]*?<td class="phr3" title="Yesterday: (\d+)">(\d+)<img[^>]*alt="([^"]*)"[^>]*><\/td>[\s\S]*?<\/tr>/g
 
+const TREND_RE = /<tr>[\s\S]*?<th class="phr1">(\d+)<\/th>[\s\S]*?<td class="phr2"><a href="([^"]*)">([^<]+)<\/a><\/td>[\s\S]*?<td class="phr3">(\d+) <img[^>]*alt="([^"]*)"[^>]*><\/td>[\s\S]*?<\/tr>/g
+const SIMPLE_RE = /<tr>[\s\S]*?<th class="phr1">(\d+)<\/th>[\s\S]*?<td class="phr2"><a href="([^"]*)">([^<]+)<\/a><\/td>[\s\S]*?<td class="phr3">([\d.]+)<\/td>[\s\S]*?<\/tr>/g
+
 function mapTrend(alt: string): string {
-  if (alt === '>') return 'up'
-  if (alt === '<') return 'down'
+  if (alt === '>' || alt === 'Up') return 'up'
+  if (alt === '<' || alt === 'Down') return 'down'
   return 'level'
 }
 
-export function parseHtml(html: string): Ranking[] {
+export function parseHtml(html: string, dataspan = '26'): Ranking[] {
   const now = new Date().toISOString()
   const items: Ranking[] = []
   let m: RegExpExecArray | null
@@ -33,6 +36,49 @@ export function parseHtml(html: string): Ranking[] {
       yesterday: Number(m[5]),
       trend: mapTrend(m[7]),
       scraped_at: now,
+      dataspan,
+    })
+  }
+  return items
+}
+
+export function parseTrendingHtml(html: string, dataspan = '26'): Ranking[] {
+  const now = new Date().toISOString()
+  const items: Ranking[] = []
+  let m: RegExpExecArray | null
+  while ((m = TREND_RE.exec(html)) !== null) {
+    items.push({
+      id: randomUUIDv7(),
+      rank: Number(m[1]),
+      name: m[3],
+      slug: m[2],
+      based_on: [],
+      hpd: Number(m[4]),
+      yesterday: null,
+      trend: mapTrend(m[5]),
+      scraped_at: now,
+      dataspan,
+    })
+  }
+  return items
+}
+
+export function parseSimpleHtml(html: string, dataspan = '26'): Ranking[] {
+  const now = new Date().toISOString()
+  const items: Ranking[] = []
+  let m: RegExpExecArray | null
+  while ((m = SIMPLE_RE.exec(html)) !== null) {
+    items.push({
+      id: randomUUIDv7(),
+      rank: Number(m[1]),
+      name: m[3],
+      slug: m[2],
+      based_on: [],
+      hpd: Number(m[4]),
+      yesterday: null,
+      trend: 'level',
+      scraped_at: now,
+      dataspan,
     })
   }
   return items
@@ -41,11 +87,11 @@ export function parseHtml(html: string): Ranking[] {
 export function insertDb(items: Ranking[]): void {
   const db = getDb()
   const stmt = db.prepare(
-    'INSERT INTO rankings (id, rank, name, slug, based_on, hpd, yesterday, trend, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO rankings (id, rank, name, slug, based_on, hpd, yesterday, trend, scraped_at, dataspan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   )
   const tx = db.transaction((rows: Ranking[]) => {
     for (const r of rows) {
-      stmt.run(r.id, r.rank, r.name, r.slug, JSON.stringify(r.based_on), r.hpd, r.yesterday, r.trend, r.scraped_at)
+      stmt.run(r.id, r.rank, r.name, r.slug, JSON.stringify(r.based_on), r.hpd, r.yesterday, r.trend, r.scraped_at, r.dataspan)
     }
   })
   tx(items)
@@ -448,13 +494,16 @@ export async function scrapeDistroList(): Promise<DistroItem[]> {
   return items
 }
 
-export async function scrapeRankings(): Promise<Ranking[]> {
+export async function scrapeRankings(dataspan = '26'): Promise<Ranking[]> {
   const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
   const page = await browser.newPage()
-  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  await page.goto(`https://distrowatch.com/index.php?dataspan=${dataspan}`, { waitUntil: 'networkidle0' })
   const html = await page.content()
   await browser.disconnect()
-  return parseHtml(html)
+
+  if (dataspan.startsWith('trending-')) return parseTrendingHtml(html, dataspan)
+  if (/title="Yesterday: \d+"/.test(html)) return parseHtml(html, dataspan)
+  return parseSimpleHtml(html, dataspan)
 }
 
 export async function scrapeNews(): Promise<News[]> {
@@ -474,8 +523,8 @@ export async function fetchAndStoreNews(): Promise<News[]> {
   return items
 }
 
-export async function fetchAndStore(): Promise<Ranking[]> {
-  const items = await scrapeRankings()
+export async function fetchAndStore(dataspan = '26'): Promise<Ranking[]> {
+  const items = await scrapeRankings(dataspan)
   if (items.length === 0) throw new Error('no ranking data scraped')
   saveJson(items)
   insertDb(items)
