@@ -466,6 +466,16 @@ function parseDistribution(html: string, slug: string): Distribution {
   }
 }
 
+export async function scrapeRandomDistribution(): Promise<Distribution> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com/random.php', { waitUntil: 'networkidle0' })
+  const slug = new URL(page.url()).searchParams.get('distribution')
+  await browser.disconnect()
+  if (!slug) throw new Error('random redirect failed')
+  return scrapeDistribution(slug)
+}
+
 export async function scrapeDistribution(slug: string): Promise<Distribution> {
   const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
   const page = await browser.newPage()

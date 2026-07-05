@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { scrapeDistribution } from "../lib/distrowatch";
+import { scrapeDistribution, scrapeRandomDistribution, scrapeDistroList } from "../lib/distrowatch";
 import { findBySlug, insert } from "../models/distributions";
 import { isDev } from "../lib/parse";
-import { scrapeDistroList } from '../lib/distrowatch'
 import { findAll, insertMany } from '../models/distributions-list'
+import { insert as insertRandom, findLatest } from '../models/random-distributions'
 
 const app = new Hono();
 
@@ -27,6 +27,22 @@ app.get('/', async (c) => {
     } catch (err) {
         return c.json({ error: 'fetch failed', detail: String(err) }, 502)
     }
+})
+
+app.get('/random', async (c) => {
+  try {
+    const data = await scrapeRandomDistribution()
+    if (!isDev()) insertRandom(data)
+    return c.json({ data })
+  } catch (err) {
+    return c.json({ error: 'fetch failed', detail: String(err) }, 502)
+  }
+})
+
+app.get('/random/history', (c) => {
+  const limit = Number(c.req.query('limit')) || 10
+  const data = findLatest(limit)
+  return c.json({ data, count: data.length })
 })
 
 app.get("/:slug", async (c) => {

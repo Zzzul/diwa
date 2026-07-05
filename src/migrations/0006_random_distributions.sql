@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS random_distributions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL,
+  name TEXT,
+  logo TEXT,
+  screenshot TEXT,
+  last_update TEXT,
+  os_type TEXT,
+  based_on TEXT DEFAULT '[]',
+  origin TEXT,
+  architecture TEXT DEFAULT '[]',
+  desktop TEXT DEFAULT '[]',
+  category TEXT DEFAULT '[]',
+  status TEXT,
+  popularity TEXT DEFAULT '{}',
+  description TEXT,
+  rating REAL,
+  reviews_count INTEGER,
+  home_page TEXT,
+  user_forums TEXT,
+  documentation TEXT,
+  screenshots TEXT,
+  download_mirrors TEXT,
+  bug_tracker TEXT,
+  reviews TEXT DEFAULT '[]',
+  where_to_donate TEXT DEFAULT '[]',
+  related_websites TEXT DEFAULT '[]',
+  reader_reviews TEXT DEFAULT '[]',
+  recent_releases TEXT DEFAULT '[]',
+  recent_headlines TEXT DEFAULT '[]',
+  scraped_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_random_distributions_slug ON random_distributions (slug);
+CREATE INDEX IF NOT EXISTS idx_random_distributions_scraped_at ON random_distributions (scraped_at DESC);
