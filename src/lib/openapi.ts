@@ -33,11 +33,6 @@ const spec = {
                 summary: "Rankings list",
                 parameters: [
                     {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 100 },
-                    },
-                    {
                         name: "slug",
                         in: "query",
                         schema: { type: "string" },
@@ -63,11 +58,6 @@ const spec = {
             get: {
                 summary: "News list",
                 parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 100 },
-                    },
                     {
                         name: "type",
                         in: "query",
@@ -125,13 +115,7 @@ const spec = {
         "/api/distributions/latest": {
             get: {
                 summary: "Latest distributions",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 50 },
-                    },
-                ],
+
                 responses: {
                     "200": {
                         description: "Latest distro releases from homepage",
@@ -142,91 +126,49 @@ const spec = {
         "/api/headlines": {
             get: {
                 summary: "Latest headlines",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Headlines list" } },
             },
         },
         "/api/packages": {
             get: {
                 summary: "Latest packages",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 30 },
-                    },
-                ],
+
                 responses: { "200": { description: "Packages list" } },
             },
         },
         "/api/reviews": {
             get: {
                 summary: "Latest reviews",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Reviews list" } },
             },
         },
         "/api/newsletters": {
             get: {
                 summary: "Latest newsletters",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Newsletters list" } },
             },
         },
         "/api/podcasts": {
             get: {
                 summary: "Latest podcasts",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Podcasts list" } },
             },
         },
         "/api/additions": {
             get: {
                 summary: "Latest additions",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Additions list" } },
             },
         },
         "/api/waiting-list": {
             get: {
                 summary: "New to waiting list",
-                parameters: [
-                    {
-                        name: "limit",
-                        in: "query",
-                        schema: { type: "integer", default: 13 },
-                    },
-                ],
+
                 responses: { "200": { description: "Waiting list" } },
             },
         },

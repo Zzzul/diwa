@@ -1,24 +1,23 @@
 import { Hono } from 'hono'
 import { findLatest, findBySlug } from '../models/rankings'
-import { parseLimit, isDev } from '../lib/parse'
+import { isDev } from '../lib/parse'
 import { scrapeRankings, insertDb } from '../lib/distrowatch'
 
 const app = new Hono()
 
 app.get('/', async (c) => {
-  const limit = parseLimit(c.req.query('limit'), 100, 500)
   const slug = c.req.query('slug') || undefined
   const dataspan = c.req.query('dataspan') || '26'
 
   if (!isDev()) {
-    const data = findLatest({ limit, slug, dataspan })
+    const data = findLatest({ slug, dataspan })
     if (data.length > 0) return c.json({ data, count: data.length })
   }
 
   try {
     const data = await scrapeRankings(dataspan)
     if (!isDev()) insertDb(data)
-    return c.json({ data: data.slice(0, limit), count: data.length })
+    return c.json({ data, count: data.length })
   } catch (err) {
     const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
     return c.json({ error: 'fetch failed', detail: msg }, 502)
@@ -69,8 +68,7 @@ app.get('/dataspans', (c) => c.json({ data: DATASPANS }))
 app.get('/:slug', (c) => {
   const slug = c.req.param('slug')
   if (!slug) return c.json({ error: 'slug required' }, 400)
-  const limit = parseLimit(c.req.query('limit'), 50, 500)
-  const data = findBySlug(slug, limit)
+  const data = findBySlug(slug)
   return c.json({ data, count: data.length, slug })
 })
 

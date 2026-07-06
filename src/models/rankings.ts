@@ -26,31 +26,31 @@ function hydrate(row: Row): Ranking {
   return { ...row, based_on }
 }
 
-export function findLatest(opts: { limit: number; slug?: string; dataspan?: string }): Ranking[] {
+export function findLatest(opts: { slug?: string; dataspan?: string }): Ranking[] {
   const db = getDb()
   const ds = opts.dataspan || '26'
   if (opts.slug) {
     const rows = db
-      .query<Row, [string, string, number]>(
-        'SELECT * FROM rankings WHERE slug = ? AND dataspan = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
+      .query<Row, [string, string]>(
+        'SELECT * FROM rankings WHERE slug = ? AND dataspan = ? ORDER BY scraped_at DESC, rank ASC'
       )
-      .all(opts.slug, ds, opts.limit)
+      .all(opts.slug, ds)
     return rows.map(hydrate)
   }
   const rows = db
-    .query<Row, [string, number]>(
-      'SELECT * FROM rankings WHERE dataspan = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
+    .query<Row, [string]>(
+      'SELECT * FROM rankings WHERE dataspan = ? ORDER BY scraped_at DESC, rank ASC'
     )
-    .all(ds, opts.limit)
+    .all(ds)
   return rows.map(hydrate)
 }
 
-export function findBySlug(slug: string, limit = 50): Ranking[] {
+export function findBySlug(slug: string): Ranking[] {
   const db = getDb()
   const rows = db
-    .query<Row, [string, number]>(
-      'SELECT * FROM rankings WHERE slug = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
+    .query<Row, [string]>(
+      'SELECT * FROM rankings WHERE slug = ? ORDER BY scraped_at DESC, rank ASC'
     )
-    .all(slug, limit)
+    .all(slug)
   return rows.map(hydrate)
 }

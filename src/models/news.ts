@@ -37,7 +37,6 @@ function hydrate(row: Row): News {
 }
 
 export function findLatest(opts: {
-  limit: number
   type?: string
   date?: string
 }): News[] {
@@ -53,8 +52,8 @@ export function findLatest(opts: {
     params.push(opts.date)
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
-  const sql = `SELECT * FROM news ${whereSql} ORDER BY scraped_at DESC, id ASC LIMIT ?`
-  const rows = db.query<Row, [...string[], number]>(sql).all(...params, opts.limit)
+  const sql = `SELECT * FROM news ${whereSql} ORDER BY scraped_at DESC, id ASC`
+  const rows = db.query<Row, [...string[]]>(sql).all(...params)
   return rows.map(hydrate)
 }
 

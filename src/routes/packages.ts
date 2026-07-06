@@ -1,23 +1,20 @@
 import { Hono } from 'hono'
 import { findLatest } from '../models/packages'
-import { parseLimit, isDev } from '../lib/parse'
+import { isDev } from '../lib/parse'
 import { scrapePackages, insertPackages } from '../lib/distrowatch'
 
 const app = new Hono()
 
 app.get('/', async (c) => {
-  const limit = parseLimit(c.req.query('limit'), 30, 200)
-
   if (!isDev()) {
-    const data = findLatest(limit)
+    const data = findLatest()
     if (data.length > 0) return c.json({ data, count: data.length })
   }
 
   try {
     const data = await scrapePackages()
     if (!isDev()) insertPackages(data)
-    const sliced = data.slice(0, limit)
-    return c.json({ data: sliced, count: sliced.length })
+    return c.json({ data, count: data.length })
   } catch (err) {
     const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
     return c.json({ error: 'fetch failed', detail: msg }, 502)

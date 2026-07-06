@@ -1,10 +1,10 @@
 import { getDb } from '../db/connection'
 import type { Package } from '../lib/distrowatch'
 
-export function findLatest(limit: number): Package[] {
+export function findLatest(): Package[] {
   const db = getDb()
-  const rows = db.query<Package, [number]>(
-    'SELECT * FROM packages ORDER BY scraped_at DESC, position ASC LIMIT ?'
-  ).all(limit)
+  const rows = db.query<Package, []>(
+    'SELECT * FROM packages ORDER BY scraped_at DESC, position ASC'
+  ).all()
   return rows
 }
