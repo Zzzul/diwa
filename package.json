@@ -4,7 +4,9 @@
         "dev": "bun run src/db/migrate.ts && bun run --hot src/index.ts",
         "db:migrate": "bun run src/db/migrate.ts",
         "db:fresh": "bun run src/db/fresh.ts && bun run src/db/migrate.ts",
-        "db:reset": "rm -rf data && bun run db:migrate"
+        "db:reset": "rm -rf data && bun run db:migrate",
+        "build": "bun build --compile --minify --sourcemap src/index.ts --outfile diwa",
+        "start": "bun run db:migrate && ./diwa"
     },
     "dependencies": {
         "@scalar/hono-api-reference": "^0.11.8",

@@ -9,6 +9,13 @@ import latest from "./routes/latest";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
 import { rateLimiter } from "hono-rate-limiter";
+import { runMigration } from "./db/migrate";
+
+const cmd = process.argv[2];
+if (cmd === "db:migrate") {
+    runMigration();
+    process.exit(0);
+}
 
 const app = new Hono();
 

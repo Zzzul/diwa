@@ -1,0 +1,33 @@
+[Unit]
+Description=Diwa - Unofficial DistroWatch API
+Documentation=https://github.com/zzzul/diwa
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/diwa
+ExecStartPre=/opt/diwa/diwa db:migrate
+ExecStart=/opt/diwa/diwa
+Restart=on-failure
+RestartSec=5
+User=diwa
+Group=diwa
+
+# Logging — journald
+StandardOutput=journal
+StandardError=journal
+
+# Log rotation (auto via journald)
+# For file-based logging, uncomment:
+# StandardOutput=append:/var/log/diwa.log
+# StandardError=append:/var/log/diwa.log
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/diwa/data
+PrivateTemp=true
+
+[Install]
+WantedBy=multi-user.target

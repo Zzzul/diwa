@@ -20,7 +20,7 @@ function appliedVersions(db: ReturnType<typeof getDb>): Set<number> {
     return new Set(rows.map((r) => r.version));
 }
 
-function run() {
+export function runMigration() {
     const db = ensureMigrationsTable();
     const applied = appliedVersions(db);
 
@@ -62,4 +62,6 @@ function run() {
     console.log(`[migrate] done (${count} applied)`);
 }
 
-run();
+if (import.meta.main) {
+    runMigration();
+}
