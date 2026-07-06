@@ -11,8 +11,15 @@ import additions from "./routes/additions";
 import waitingList from "./routes/waiting-list";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
+import { rateLimiter } from "hono-rate-limiter";
 
 const app = new Hono();
+
+app.use(rateLimiter({
+  windowMs: 60_000,
+  limit: 3,
+  keyGenerator: (c) => c.req.header("x-forwarded-for") ?? "unknown",
+}))
 
 app.get("/api/healthz", (c) => c.json({ ok: true }));
 app.route("/api/rankings", rankings);
