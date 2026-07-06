@@ -1,13 +1,15 @@
 import { Scalar } from "@scalar/hono-api-reference";
 import type { Hono } from "hono";
 
+const BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
+
 const ex = {
     healthz: { ok: true },
     ranking: {
         id: "019f3635-fa4d-7000-8a89-87d6d7e45224",
         rank: 1,
         name: "Linux Mint",
-        slug: "http://localhost:3000/api/distributions/mint",
+        slug: `${BASE_URL}/api/distributions/mint`,
         based_on: ["Ubuntu"],
         hpd: 1848,
         yesterday: 1822,
@@ -21,7 +23,7 @@ const ex = {
         is_new: true,
         type: "stable",
         headline: "Linux Mint 22.1 Released",
-        headline_slug: "http://localhost:3000/api/news/12345",
+        headline_slug: `${BASE_URL}/api/news/12345`,
         headline_url: "https://distrowatch.com/...",
         logo: "https://distrowatch.com/images/...",
         screenshot: "https://distrowatch.com/images/...",
@@ -42,6 +44,8 @@ const ex = {
         scraped_at: "2026-07-06T12:00:00.000Z",
     },
     newsFilter: {
+        // ... unchanged
+    },
         data: {
             distribution: [{ value: "mint", label: "Linux Mint" }],
             release: [{ value: "stable", label: "Stable" }],
@@ -204,7 +208,7 @@ const ex = {
     searchResult: {
         rank: 1,
         name: "Linux Mint",
-        slug: "http://localhost:3000/api/distributions/mint",
+        slug: `${BASE_URL}/api/distributions/mint`,
         popularity: 2,
         description: "Ubuntu-based distribution...",
     },
@@ -221,7 +225,7 @@ const spec = {
         version: "1.0.0",
         description: "API for DistroWatch data — rankings, distributions, news",
     },
-    servers: [{ url: "http://localhost:3000", description: "local dev" }],
+    servers: [{ url: BASE_URL, description: "local dev" }],
     paths: {
         "/": {
             get: {
