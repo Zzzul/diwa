@@ -9,6 +9,7 @@ import newsletters from "./routes/newsletters";
 import podcasts from "./routes/podcasts";
 import additions from "./routes/additions";
 import waitingList from "./routes/waiting-list";
+import newsFilters from "./routes/news-filters";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
 import { rateLimiter } from "hono-rate-limiter";
@@ -17,12 +18,13 @@ const app = new Hono();
 
 app.use(rateLimiter({
   windowMs: 60_000,
-  limit: 3,
+  limit: 30,
   keyGenerator: (c) => c.req.header("x-forwarded-for") ?? "unknown",
 }))
 
 app.get("/api/healthz", (c) => c.json({ ok: true }));
 app.route("/api/rankings", rankings);
+app.route("/api/news/filters", newsFilters);
 app.route("/api/news", news);
 app.route("/api/distributions", distributions);
 app.route("/api/headlines", headlines);

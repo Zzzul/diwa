@@ -20,6 +20,10 @@ export type News = {
   text: string | null
   text_html: string | null
   links: NewsLink[]
+  distribution: string | null
+  release_type: string | null
+  month: string | null
+  year: string | null
   scraped_at: string
 }
 
@@ -39,6 +43,10 @@ function hydrate(row: Row): News {
 export function findLatest(opts: {
   type?: string
   date?: string
+  distribution?: string
+  release?: string
+  month?: string
+  year?: string
 }): News[] {
   const db = getDb()
   const where: string[] = []
@@ -50,6 +58,22 @@ export function findLatest(opts: {
   if (opts.date) {
     where.push('date = ?')
     params.push(opts.date)
+  }
+  if (opts.distribution) {
+    where.push('distribution = ?')
+    params.push(opts.distribution)
+  }
+  if (opts.release) {
+    where.push('release_type = ?')
+    params.push(opts.release)
+  }
+  if (opts.month) {
+    where.push('month = ?')
+    params.push(opts.month)
+  }
+  if (opts.year) {
+    where.push('year = ?')
+    params.push(opts.year)
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const sql = `SELECT * FROM news ${whereSql} ORDER BY scraped_at DESC, id ASC`

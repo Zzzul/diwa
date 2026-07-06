@@ -64,8 +64,63 @@ const spec = {
                         schema: { type: "string" },
                         description: "filter by news type",
                     },
+                    {
+                        name: "date",
+                        in: "query",
+                        schema: { type: "string" },
+                        description: "filter by date (YYYY-MM-DD)",
+                    },
+                    {
+                        name: "distribution",
+                        in: "query",
+                        schema: { type: "string" },
+                        description: "filter by distro slug",
+                    },
+                    {
+                        name: "release",
+                        in: "query",
+                        schema: { type: "string" },
+                        description:
+                            "stable | weekly | development | bsd | mobile | other",
+                    },
+                    {
+                        name: "month",
+                        in: "query",
+                        schema: { type: "string" },
+                        description: "month name (January, February, ...)",
+                    },
+                    {
+                        name: "year",
+                        in: "query",
+                        schema: { type: "string" },
+                        description: "four-digit year",
+                    },
                 ],
                 responses: { "200": { description: "News list" } },
+            },
+        },
+        "/api/news/filters": {
+            get: {
+                summary: "News filter options",
+                description:
+                    "Distribution slugs, release types, months, years for filtering news",
+                responses: { "200": { description: "Filter options" } },
+            },
+        },
+        "/api/news/detail/{newsid}": {
+            get: {
+                summary: "News detail by DistroWatch newsid",
+                description: "Detailed news including distribution info, related news. Rejects weekly type.",
+                parameters: [
+                    {
+                        name: "newsid",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description: "DistroWatch numeric news ID",
+                    },
+                ],
+                responses: { "200": { description: "News detail" } },
             },
         },
         "/api/news/{id}": {

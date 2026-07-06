@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS news_detail (
+  newsid TEXT PRIMARY KEY,
+  date TEXT,
+  headline TEXT,
+  headline_url TEXT,
+  type TEXT,
+  logo TEXT,
+  screenshot TEXT,
+  rating REAL,
+  text TEXT,
+  text_html TEXT,
+  distribution_slug TEXT,
+  distribution_name TEXT,
+  distribution_homepage TEXT,
+  distribution_forums TEXT,
+  distribution_docs TEXT,
+  related_news TEXT,
+  about TEXT,
+  scraped_at TEXT
+);

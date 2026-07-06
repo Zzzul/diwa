@@ -18,7 +18,7 @@ export function insertMany(items: LatestDist[]): void {
 
 export function findLatest(limit = 50): LatestDistribution[] {
   const db = getDb()
-  return db.query<any[], [number]>(
+  return db.query<any, [number]>(
     'SELECT * FROM latest_distributions ORDER BY scraped_at DESC, date DESC LIMIT ?'
   ).all(limit)
 }

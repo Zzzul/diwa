@@ -5,6 +5,8 @@ import puppeteer from 'puppeteer-core'
 import { getDb } from '../db/connection'
 import type { Ranking } from '../models/rankings'
 import type { News, NewsLink } from '../models/news'
+import type { FilterOption } from '../models/news-filter-options'
+import type { NewsDetail } from '../models/news-detail'
 
 const DATA_DIR = resolve(import.meta.dir, '..', '..', 'data', 'distrowatch')
 const BROWSER_WS = process.env.BROWSER_WS || 'ws://127.0.0.1:9222/devtools/browser'
@@ -124,7 +126,7 @@ function typeFromHeadline(h: string): string {
   return 'announcement'
 }
 
-function parseAnnouncements(html: string, now: string): News[] {
+function parseAnnouncements(html: string, now: string, filters?: { distribution?: string; release?: string; month?: string; year?: string }): News[] {
   const items: News[] = []
   const section = html.match(/Latest News and Updates<\/th>([\s\S]*?)(?:Page Hit Ranking|$)/)
   if (!section) return items
@@ -187,26 +189,31 @@ function parseAnnouncements(html: string, now: string): News[] {
       text: stripHtml(textHtml),
       text_html: absolutizeHtml(textHtml),
       links,
+      distribution: filters?.distribution || null,
+      release_type: filters?.release || null,
+      month: filters?.month || null,
+      year: filters?.year || null,
       scraped_at: now,
     })
   }
   return items
 }
 
-export function parseNewsHtml(html: string): News[] {
+export function parseNewsHtml(html: string, filters?: { distribution?: string; release?: string; month?: string; year?: string }): News[] {
   const now = new Date().toISOString()
-  return parseAnnouncements(html, now)
+  return parseAnnouncements(html, now, filters)
 }
 
 export function insertNews(items: News[]): void {
   const db = getDb()
   const stmt = db.prepare(
-    'INSERT INTO news (id, date, is_new, type, headline, headline_slug, headline_url, logo, screenshot, rating, text, text_html, links, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO news (id, date, is_new, type, headline, headline_slug, headline_url, logo, screenshot, rating, text, text_html, links, distribution, release_type, month, year, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   )
   const tx = db.transaction((rows: News[]) => {
     for (const r of rows) {
       stmt.run(r.id, r.date, r.is_new ? 1 : 0, r.type, r.headline, r.headline_slug, r.headline_url,
-        r.logo, r.screenshot, r.rating, r.text, r.text_html, JSON.stringify(r.links), r.scraped_at)
+        r.logo, r.screenshot, r.rating, r.text, r.text_html, JSON.stringify(r.links),
+        r.distribution, r.release_type, r.month, r.year, r.scraped_at)
     }
   })
   tx(items)
@@ -559,13 +566,22 @@ export async function scrapeRankings(dataspan = '26'): Promise<Ranking[]> {
   return parseSimpleHtml(html, dataspan)
 }
 
-export async function scrapeNews(): Promise<News[]> {
+export async function scrapeNews(filters?: { distribution?: string; release?: string; month?: string; year?: string }): Promise<News[]> {
   const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
   const page = await browser.newPage()
-  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  let url = 'https://distrowatch.com'
+  if (filters?.distribution || filters?.release || filters?.month || filters?.year) {
+    const params = new URLSearchParams()
+    if (filters.distribution) params.set('distribution', filters.distribution)
+    if (filters.release) params.set('release', filters.release)
+    if (filters.month) params.set('month', filters.month)
+    if (filters.year) params.set('year', filters.year)
+    url = `https://distrowatch.com/index.php?${params.toString()}`
+  }
+  await page.goto(url, { waitUntil: 'networkidle0' })
   const html = await page.content()
   await browser.disconnect()
-  return parseNewsHtml(html)
+  return parseNewsHtml(html, filters)
 }
 
 export async function fetchAndStoreNews(): Promise<News[]> {
@@ -976,13 +992,140 @@ export function insertWaitingList(items: WaitingListItem[]): void {
   tx(items)
 }
 
+function parseSelectOptions(html: string, selectName: string): { value: string; label: string }[] {
+  const results: { value: string; label: string }[] = []
+  const re = new RegExp(`<select[^>]*name="${selectName}"[^>]*>([\\s\\S]*?)<\\/select>`, 'i')
+  const selectM = html.match(re)
+  if (!selectM) return results
+  const optRe = /<option\s+value="([^"]*)"([^>]*)>([^<]*)<\/option>/g
+  let m: RegExpExecArray | null
+  while ((m = optRe.exec(selectM[1])) !== null) {
+    if (m[1] !== 'all') results.push({ value: m[1], label: m[3].trim() })
+  }
+  return results
+}
+
+export async function scrapeNewsFilterOptions(): Promise<(FilterOption & { scraped_at: string })[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+
+  const now = new Date().toISOString()
+  const result: any[] = []
+  for (const cat of ['distribution', 'release', 'month', 'year']) {
+    for (const opt of parseSelectOptions(html, cat)) {
+      result.push({ category: cat, value: opt.value, label: opt.label, scraped_at: now })
+    }
+  }
+  return result as (FilterOption & { scraped_at: string })[]
+}
+
+export function insertNewsFilterOptions(items: (FilterOption & { scraped_at: string })[]): void {
+  const db = getDb()
+  db.run('DELETE FROM news_filter_options')
+  const stmt = db.prepare(
+    'INSERT INTO news_filter_options (category, value, label, scraped_at) VALUES (?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: (FilterOption & { scraped_at: string })[]) => {
+    for (const r of rows) stmt.run(r.category, r.value, r.label, r.scraped_at)
+  })
+  tx(items)
+}
+
+function parseNewsDetailHtml(html: string, newsid: string): NewsDetail {
+  const now = new Date().toISOString()
+
+  const dateM = html.match(/<td class="NewsDate">([^<]*)<\/td>/)
+  const date = dateM ? dateM[1].trim() : null
+
+  const headlineM = html.match(/<td class="NewsHeadline"><a href="\/(\d+)">([^<]*)<\/a><\/td>/)
+  const headline = headlineM ? headlineM[2].trim() : null
+  const headlineUrl = headlineM ? `https://distrowatch.com/${headlineM[1]}` : null
+
+  const logoM = html.match(/<img[^>]*src="([^"]*)"[^>]*class="logo"[^>]*>/i)
+  const logo = logoM ? `https://distrowatch.com/${logoM[1].replace(/^\//, '')}` : null
+
+  const screenshotM = html.match(/<a href="(images\/slinks\/[^"]+)">\s*<img src="(images\/slinks\/[^"]+)-small\.png"/)
+  const screenshot = screenshotM ? `https://distrowatch.com/${screenshotM[1].replace(/^\//, '')}` : null
+
+  const ratingM = html.match(/Rate this project<\/a>\s*\(([\d.]+)\)/)
+  const rating = ratingM ? Number(ratingM[1]) : null
+
+  const textM = html.match(/<td class="NewsText"[^>]*>([\s\S]*?)<\/td>/)
+  const textHtml = textM ? textM[1].trim() : null
+  const text = textHtml ? textHtml.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : null
+
+  const distroSlugM = html.match(/<a href="(?!https?:)([^"]+)"[^>]*>\s*<img[^>]*class="logo"/i)
+  const distributionSlug = distroSlugM ? `${API_BASE}/api/distributions/${distroSlugM[1].trim()}` : null
+
+  function toSnakeKey(s: string): string {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  }
+
+  function parseSummaryTable(): Record<string, string> | null {
+    const tableM = html.match(/<th class="Invert"\s*colspan="2">[^<]*Summary<\/th>([\s\S]*?)<\/table>/i)
+    if (!tableM) return null
+    const result: Record<string, string> = {}
+    const rowRe = /<th class="Info">([\s\S]*?)<\/th>\s*<td class="Info">([\s\S]*?)<\/td>/g
+    let m: RegExpExecArray | null
+    while ((m = rowRe.exec(tableM[1])) !== null) {
+      let key = m[1].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+      const val = m[2].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+      if (key && val && val !== '--' && val !== '') {
+        if (key === 'Distribution') key = 'name'
+        else key = toSnakeKey(key)
+        result[key] = val
+      }
+    }
+    return Object.keys(result).length > 0 ? result : null
+  }
+
+  const distributionSummary = parseSummaryTable()
+
+  const aboutM = html.match(/<th class="Invert">About ([^<]*)<\/th>[\s\S]*?<td class="Info">([\s\S]*?)<\/td>/i)
+  const about = aboutM ? aboutM[2].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : null
+
+  const relatedM = html.match(/<th class="Invert"[^>]*>Recent Related News and Releases<\/th>([\s\S]*?)<\/table>/i)
+  let relatedNews: { news_id: string; headline: string; url: string }[] | null = null
+  if (relatedM) {
+    const links: { news_id: string; headline: string; url: string }[] = []
+    const linkRe = /<a href="(\d+)">([^<]*)<\/a>/g
+    let m: RegExpExecArray | null
+    while ((m = linkRe.exec(relatedM[1])) !== null) {
+      if (m[1] === newsid) continue
+      links.push({ news_id: m[1], headline: m[2].trim(), url: `${API_BASE}/api/news/detail/${m[1]}` })
+    }
+    if (links.length > 0) relatedNews = links
+  }
+
+  const type = typeFromHeadline(headline || '')
+
+  return {
+    newsid, date, headline, headline_url: headlineUrl, type, logo, screenshot, rating,
+    text, text_html: textHtml, distribution_slug: distributionSlug,
+    distribution_summary: distributionSummary,
+    related_news: relatedNews, about, scraped_at: now,
+  }
+}
+
+export async function scrapeNewsDetail(newsid: string): Promise<NewsDetail> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto(`https://distrowatch.com/?newsid=${newsid}`, { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseNewsDetailHtml(html, newsid)
+}
+
 export function getLatestRankings(limit: number, slug?: string): Ranking[] {
   const db = getDb()
-  const rows = db.query<any[], [number]>(
+  const rows = db.query<any, [string, number] | [number]>(
     slug
       ? 'SELECT * FROM rankings WHERE slug = ? ORDER BY scraped_at DESC, rank ASC LIMIT ?'
       : 'SELECT * FROM rankings ORDER BY scraped_at DESC, rank ASC LIMIT ?'
-  ).all(...(slug ? [slug as any, limit] : [limit]))
+  ).all(...(slug ? [slug, limit] : [limit]) as [string, number] | [number])
   return rows.map((r: any) => ({
     ...r,
     based_on: (() => { try { const v = JSON.parse(r.based_on); return Array.isArray(v) ? v : [] } catch { return [] } })(),
