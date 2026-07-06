@@ -7,6 +7,7 @@ import type { Ranking } from '../models/rankings'
 import type { News, NewsLink } from '../models/news'
 import type { FilterOption } from '../models/news-filter-options'
 import type { NewsDetail } from '../models/news-detail'
+import type { WeeklyIssue, WeeklySection } from '../models/weekly'
 
 const DATA_DIR = resolve(import.meta.dir, '..', '..', 'data', 'distrowatch')
 const BROWSER_WS = process.env.BROWSER_WS || 'ws://127.0.0.1:9222/devtools/browser'
@@ -1117,6 +1118,53 @@ export async function scrapeNewsDetail(newsid: string): Promise<NewsDetail> {
   const html = await page.content()
   await browser.disconnect()
   return parseNewsDetailHtml(html, newsid)
+}
+
+function parseWeeklyHtml(html: string, issue: string): WeeklyIssue {
+  const now = new Date().toISOString()
+  const rows: { titleHtml: string; title: string; content: string }[] = []
+  const rowRe = /<td class="rTitle">([\s\S]*?)<\/td>\s*<\/tr>\s*<tr>\s*<td class="rStory">([\s\S]*?)<\/td>\s*<\/tr>/g
+  let m: RegExpExecArray | null
+  while ((m = rowRe.exec(html)) !== null) {
+    const titleHtml = m[1].trim()
+    const title = titleHtml.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+    const content = m[2].trim()
+    rows.push({ titleHtml, title, content })
+  }
+  if (rows.length === 0) throw new Error('no weekly content found')
+
+  const mainTitle = rows[0].title
+  const issueNumM = mainTitle.match(/Issue\s+(\d+)/i)
+  const issueNumber = issueNumM ? Number(issueNumM[1]) : null
+  const dateM = mainTitle.match(/(\d+\s+\w+\s+\d{4})/)
+  let date: string | null = null
+  if (dateM) {
+    const d = new Date(dateM[1])
+    if (!isNaN(d.getTime())) date = d.toISOString().slice(0, 10)
+  }
+
+  const sections: WeeklySection[] = []
+  for (let i = 1; i < rows.length; i++) {
+    const idM = rows[i].titleHtml.match(/<a\s+id="([^"]+)"/)
+    const id = idM ? idM[1] : null
+    sections.push({
+      id,
+      title: rows[i].title,
+      content_html: rows[i].content,
+      content_text: rows[i].content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(),
+    })
+  }
+
+  return { issue, issue_number: issueNumber, title: mainTitle, date, sections, scraped_at: now }
+}
+
+export async function scrapeWeeklyIssue(issue: string): Promise<WeeklyIssue> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto(`https://distrowatch.com/weekly.php?issue=${issue}`, { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseWeeklyHtml(html, issue)
 }
 
 export function getLatestRankings(limit: number, slug?: string): Ranking[] {

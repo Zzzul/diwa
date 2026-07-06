@@ -110,7 +110,8 @@ const spec = {
         "/api/news/detail/{newsid}": {
             get: {
                 summary: "News detail by DistroWatch newsid",
-                description: "Detailed news including distribution info, related news. Rejects weekly type.",
+                description:
+                    "Detailed news including distribution info, related news. Rejects weekly type.",
                 parameters: [
                     {
                         name: "newsid",
@@ -225,6 +226,24 @@ const spec = {
                 summary: "New to waiting list",
 
                 responses: { "200": { description: "Waiting list" } },
+            },
+        },
+        "/api/weekly/{id}": {
+            get: {
+                summary: "DistroWatch Weekly issue",
+                description:
+                    "Full weekly issue content with sections (feature, news, Q&A, etc.)",
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description:
+                            "Issue date in YYYYMMDD format (e.g. 20260629)",
+                    },
+                ],
+                responses: { "200": { description: "Weekly issue" } },
             },
         },
     },

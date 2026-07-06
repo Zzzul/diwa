@@ -10,6 +10,7 @@ import podcasts from "./routes/podcasts";
 import additions from "./routes/additions";
 import waitingList from "./routes/waiting-list";
 import newsFilters from "./routes/news-filters";
+import weekly from "./routes/weekly";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
 import { rateLimiter } from "hono-rate-limiter";
@@ -34,6 +35,7 @@ app.route("/api/newsletters", newsletters);
 app.route("/api/podcasts", podcasts);
 app.route("/api/additions", additions);
 app.route("/api/waiting-list", waitingList);
+app.route("/api/weekly", weekly);
 setupOpenApi(app);
 
 Bun.cron("0 * * * *", cleanupOldData)
