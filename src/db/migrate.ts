@@ -1,8 +1,18 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { getDb } from "./connection";
 
-const MIGRATIONS_DIR = resolve(import.meta.dir, "..", "migrations");
+function findMigrationsDir(): string {
+    const fromSource = resolve(import.meta.dir, "..", "migrations");
+    try {
+        statSync(fromSource);
+        return fromSource;
+    } catch {
+        return resolve(process.cwd(), "migrations");
+    }
+}
+
+const MIGRATIONS_DIR = findMigrationsDir();
 const NAME_RE = /^(\d+)_([a-z0-9_]+)\.sql$/;
 
 function ensureMigrationsTable() {

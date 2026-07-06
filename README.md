@@ -45,7 +45,7 @@ bun run build
 bun start
 ```
 
-Binary `./diwa` is self-contained. Deploy with folder `data/` (SQLite DB auto-created on first migration).
+Binary `./diwa` is self-contained. Deploy with `data/` (SQLite DB) and `migrations/` (SQL files for initial setup).
 
 ### Manual production start (without binary)
 
@@ -63,11 +63,12 @@ Run as daemon with auto-restart.
 sudo useradd -r -s /bin/false diwa
 ```
 
-### 2. Place binary
+### 2. Place binary and migrations
 
 ```bash
 sudo mkdir -p /opt/diwa/data
 sudo cp diwa /opt/diwa/
+sudo cp -r migrations /opt/diwa/
 sudo chown -R diwa:diwa /opt/diwa
 ```
 
