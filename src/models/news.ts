@@ -62,6 +62,8 @@ export function findLatest(opts: {
   if (opts.distribution) {
     where.push('distribution = ?')
     params.push(opts.distribution)
+  } else if (!opts.type && !opts.date && !opts.release && !opts.month && !opts.year) {
+    where.push('distribution IS NULL')
   }
   if (opts.release) {
     where.push('release_type = ?')

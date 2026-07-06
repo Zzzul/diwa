@@ -228,14 +228,14 @@ const spec = {
                 responses: { "200": { description: "Waiting list" } },
             },
         },
-        "/api/weekly/{id}": {
+        "/api/weekly/{issue}": {
             get: {
                 summary: "DistroWatch Weekly issue",
                 description:
                     "Full weekly issue content with sections (feature, news, Q&A, etc.)",
                 parameters: [
                     {
-                        name: "id",
+                        name: "issue",
                         in: "path",
                         required: true,
                         schema: { type: "string" },
@@ -244,6 +244,36 @@ const spec = {
                     },
                 ],
                 responses: { "200": { description: "Weekly issue" } },
+            },
+        },
+        "/api/search/filters": {
+            get: {
+                summary: "Search filter options",
+                description: "Available filters for distribution search (OS type, category, based on, desktop, etc.)",
+                responses: { "200": { description: "Search filters" } },
+            },
+        },
+        "/api/search": {
+            get: {
+                summary: "Search distributions",
+                description: "Search distributions by criteria. All params optional.",
+                parameters: [
+                    { name: "ostype", in: "query", schema: { type: "string" } },
+                    { name: "category", in: "query", schema: { type: "string" } },
+                    { name: "origin", in: "query", schema: { type: "string" } },
+                    { name: "basedon", in: "query", schema: { type: "string" } },
+                    { name: "notbasedon", in: "query", schema: { type: "string" } },
+                    { name: "desktop", in: "query", schema: { type: "string" } },
+                    { name: "architecture", in: "query", schema: { type: "string" } },
+                    { name: "package", in: "query", schema: { type: "string" } },
+                    { name: "rolling", in: "query", schema: { type: "string" } },
+                    { name: "isosize", in: "query", schema: { type: "string" } },
+                    { name: "netinstall", in: "query", schema: { type: "string" } },
+                    { name: "language", in: "query", schema: { type: "string" } },
+                    { name: "defaultinit", in: "query", schema: { type: "string" } },
+                    { name: "status", in: "query", schema: { type: "string" } },
+                ],
+                responses: { "200": { description: "Search results" } },
             },
         },
     },

@@ -8,6 +8,8 @@ import type { News, NewsLink } from '../models/news'
 import type { FilterOption } from '../models/news-filter-options'
 import type { NewsDetail } from '../models/news-detail'
 import type { WeeklyIssue, WeeklySection } from '../models/weekly'
+import type { SearchFilter, SearchResult } from '../models/search'
+import type { SearchFilterRow } from '../models/search-filters'
 
 const DATA_DIR = resolve(import.meta.dir, '..', '..', 'data', 'distrowatch')
 const BROWSER_WS = process.env.BROWSER_WS || 'ws://127.0.0.1:9222/devtools/browser'
@@ -1178,4 +1180,84 @@ export function getLatestRankings(limit: number, slug?: string): Ranking[] {
     ...r,
     based_on: (() => { try { const v = JSON.parse(r.based_on); return Array.isArray(v) ? v : [] } catch { return [] } })(),
   }))
+}
+
+async function fetchSearchPage(params: Record<string, string>): Promise<string> {
+  const qs = new URLSearchParams(params).toString()
+  const url = `https://distrowatch.com/search.php${qs ? '?' + qs : ''}`
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto(url, { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return html
+}
+
+export async function scrapeSearchFilters(): Promise<(SearchFilterRow & { scraped_at: string })[]> {
+  const html = await fetchSearchPage({})
+  const formM = html.match(/<form[^>]*action="search\.php#simpleresults"[^>]*>([\s\S]*?)<\/form>/)
+  if (!formM) throw new Error('search form not found')
+  const formHtml = formM[1]
+  const now = new Date().toISOString()
+
+  const rows: (SearchFilterRow & { scraped_at: string })[] = []
+  const selectRe = /<tr>[\s\S]*?<b>([^<]+)<\/b>[\s\S]*?<select name="([^"]+)"[^>]*>([\s\S]*?)<\/select>[\s\S]*?<\/tr>/g
+  let m: RegExpExecArray | null
+  while ((m = selectRe.exec(formHtml)) !== null) {
+    const label = m[1].trim()
+    const name = m[2]
+    const optionsHtml = m[3]
+    const optRe = /<option\s*(?:selected="")?\s*value="([^"]*)">([^<]+)<\/option>/g
+    let om: RegExpExecArray | null
+    while ((om = optRe.exec(optionsHtml)) !== null) {
+      rows.push({ category_name: name, category_label: label, value: om[1], label: om[2], scraped_at: now })
+    }
+  }
+  return rows
+}
+
+export function insertSearchFilters(items: (SearchFilterRow & { scraped_at: string })[]): void {
+  const db = getDb()
+  db.run('DELETE FROM search_filters')
+  const stmt = db.prepare(
+    'INSERT INTO search_filters (category_name, category_label, value, label, scraped_at) VALUES (?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: (SearchFilterRow & { scraped_at: string })[]) => {
+    for (const r of rows) stmt.run(r.category_name, r.category_label, r.value, r.label, r.scraped_at)
+  })
+  tx(items)
+}
+
+export async function scrapeSearch(params: Record<string, string>): Promise<SearchResult[]> {
+  const html = await fetchSearchPage(params)
+  const tdMarker = '<td class="NewsText" style="width: 100%">'
+  const start = html.indexOf(tdMarker)
+  if (start === -1) throw new Error('search result area not found')
+  const contentStart = start + tdMarker.length
+  const tdEnd = html.lastIndexOf('</td>')
+  const tdContent = html.slice(contentStart, tdEnd)
+
+  const anchorM = tdContent.match(/<a id="simpleresults"><\/a>([\s\S]*)$/)
+  if (!anchorM) return []
+  const resultsArea = anchorM[1]
+
+  const results: SearchResult[] = []
+  const entryRe = /<b>(\d+)\.\s*<a href="([^"]+)">([^<]+)<\/a>\s*\((\d+)\)<\/b><br>/g
+  let m: RegExpExecArray | null
+  let prevEnd = 0
+  let prevRank = 0
+  while ((m = entryRe.exec(resultsArea)) !== null) {
+    if (prevRank > 0) {
+      const desc = resultsArea.slice(prevEnd, m.index).replace(/<br>$/, '').trim()
+      results[results.length - 1].description = desc
+    }
+    prevEnd = m.index + m[0].length
+    prevRank = Number(m[1])
+    results.push({ rank: prevRank, slug: m[2], name: m[3], popularity: Number(m[4]), description: '' })
+  }
+  if (results.length > 0 && prevEnd > 0) {
+    const desc = resultsArea.slice(prevEnd).replace(/<br>\s*$/, '').trim()
+    results[results.length - 1].description = desc
+  }
+  return results
 }

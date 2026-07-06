@@ -1,9 +1,16 @@
 import { Hono } from 'hono'
+import type { Ranking } from '../models/rankings'
 import { findLatest, findBySlug } from '../models/rankings'
 import { isDev } from '../lib/parse'
 import { scrapeRankings, insertDb } from '../lib/distrowatch'
 
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:3000'
+
 const app = new Hono()
+
+function enrich(r: Ranking): Ranking {
+  return { ...r, slug: `${API_BASE}/api/distributions/${r.slug}` }
+}
 
 app.get('/', async (c) => {
   const slug = c.req.query('slug') || undefined
@@ -11,13 +18,13 @@ app.get('/', async (c) => {
 
   if (!isDev()) {
     const data = findLatest({ slug, dataspan })
-    if (data.length > 0) return c.json({ data, count: data.length })
+    if (data.length > 0) return c.json({ data: data.map(enrich), count: data.length })
   }
 
   try {
     const data = await scrapeRankings(dataspan)
     if (!isDev()) insertDb(data)
-    return c.json({ data, count: data.length })
+    return c.json({ data: data.map(enrich), count: data.length })
   } catch (err) {
     const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
     return c.json({ error: 'fetch failed', detail: msg }, 502)
@@ -69,7 +76,7 @@ app.get('/:slug', (c) => {
   const slug = c.req.param('slug')
   if (!slug) return c.json({ error: 'slug required' }, 400)
   const data = findBySlug(slug)
-  return c.json({ data, count: data.length, slug })
+  return c.json({ data: data.map(enrich), count: data.length, slug })
 })
 
 export default app
