@@ -1,62 +1,37 @@
-# diwa
+<div align="center">
+<h1>Diwa: unofficiall Distrowatch API</h1>
+</div>
 
-Ranking & news scraper API. Dibangun dengan [Hono](https://hono.dev) + `bun:sqlite`.
+Diwa is an open-source project and simple unofficial API from the [Distrowatch](https://distrowatch.com/) site to get some public data of open-source operation systems like Linux, BSD, etc.
 
 ## Setup
 
 ```bash
 bun install
 bun run db:migrate
-```
-
-## Menjalankan
-
-```bash
 bun run dev
 ```
 
-Server: `http://localhost:3000`
+## Docs
 
-## Endpoint
+Interactive API reference at `/api/docs`. Shows all endpoints, request params, response shapes.
 
-| Method | Path | Deskripsi |
-|--------|------|-----------|
-| GET | `/api/healthz` | Cek server |
-| GET | `/api/rankings` | Ranking snapshot. Query: `?limit=`, `?slug=` |
-| GET | `/api/rankings/:slug` | Riwayat ranking per slug. Query: `?limit=` |
-| GET | `/api/news` | Daftar news. Query: `?limit=`, `?type=`, `?date=` |
-| GET | `/api/news/:id` | Detail news (400 jika id invalid, 404 jika tidak ditemukan) |
+## Showcase
 
-Limit default: `/api/rankings` = 100 (max 500), `/api/news` = 50 (max 200).
+Use diwa in your project? Open a PR to add yourself here.
 
-### Contoh
+## Contributing
 
-```bash
-curl http://localhost:3000/api/healthz
-curl http://localhost:3000/api/rankings
-curl http://localhost:3000/api/rankings/Bitcoin?limit=10
-curl http://localhost:3000/api/news?type=announcement
-curl http://localhost:3000/api/news/1
-```
+PRs welcome. Keep it simple — this is a scraper API, not a framework.
 
-## Lainnya
+## Caching
 
-| Perintah | Efek |
-|----------|------|
-| `bun run db:migrate` | Jalankan migration yg belum diaplikasikan |
-| `bun run db:reset` | Hapus DB + migrate ulang |
-| `bun run scrape:distrowatch` | Scrape distrowatch.com, simpan HTML ke `data/distrowatch/` |
+Data cached in SQLite for 12 hours. Not real-time with DistroWatch. Cron cleans stale data every hour.
 
-## Struktur
+If cache miss → fresh scrape. Response time 1–5s depends on DistroWatch speed, Obscura & Puppeteer overhead.
 
-```
-src/
-  app.ts            # app Hono, mount routes
-  index.ts          # entry bun
-  db/               # koneksi DB + migration runner
-  migrations/       # file SQL migration
-  models/           # query functions (rankings, news)
-  controllers/      # handler
-  routes/           # sub-app per resource
-  lib/              # helper
-```
+## Disclaimer
+
+diwa is **not affiliated with, endorsed by, or connected to DistroWatch.com**. All data is scraped from publicly available pages.
+
+**You are responsible for usage of this API.** Be respectful toward DistroWatch's servers — don't spam requests. No sponsor. No warranty. Open source under MIT.

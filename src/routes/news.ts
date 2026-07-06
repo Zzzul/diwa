@@ -57,32 +57,30 @@ app.get('/', async (c) => {
   }
 })
 
-app.get('/detail/:newsid', async (c) => {
-  const newsid = c.req.param('newsid')
-  if (!newsid || !/^\d+$/.test(newsid)) return c.json({ error: 'invalid newsid' }, 400)
+app.get('/:id', async (c) => {
+  const id = c.req.param('id')
+  if (!id) return c.json({ error: 'invalid id' }, 400)
 
-  if (!isDev()) {
-    const cached = findNewsDetail(newsid)
+  if (!isDev() && /^\d+$/.test(id)) {
+    const cached = findNewsDetail(id)
     if (cached) {
       if (cached.type === 'weekly') return c.json({ error: 'weekly news not supported' }, 400)
       return c.json({ data: cached })
     }
   }
 
-  try {
-    const data = await scrapeNewsDetail(newsid)
-    if (data.type === 'weekly') return c.json({ error: 'weekly news not supported' }, 400)
-    if (!isDev()) insertNewsDetail(data)
-    return c.json({ data })
-  } catch (err) {
-    const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
-    return c.json({ error: 'fetch failed', detail: msg }, 502)
+  if (/^\d+$/.test(id)) {
+    try {
+      const data = await scrapeNewsDetail(id)
+      if (data.type === 'weekly') return c.json({ error: 'weekly news not supported' }, 400)
+      if (!isDev()) insertNewsDetail(data)
+      return c.json({ data })
+    } catch (err) {
+      const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
+      return c.json({ error: 'fetch failed', detail: msg }, 502)
+    }
   }
-})
 
-app.get('/:id', (c) => {
-  const id = c.req.param('id')
-  if (!id) return c.json({ error: 'invalid id' }, 400)
   const row = findById(id)
   if (!row) return c.json({ error: 'not found' }, 404)
   return c.json({ data: enrich(row) })
