@@ -47,6 +47,11 @@ app.onError((err, c) => {
 const port = Number(process.env.PORT) || 3000;
 const host = process.env.HOST || "0.0.0.0";
 
+console.log(`[config] NODE_ENV=${process.env.NODE_ENV || "development"}`);
+console.log(`[config] PORT=${port}`);
+console.log(`[config] HOST=${host}`);
+console.log(`[config] API_BASE_URL=${process.env.API_BASE_URL || "not set"}`);
+console.log(`[config] BROWSER_WS=${process.env.BROWSER_WS ? "set" : "not set"}`);
 console.log(`Started server: http://${host}:${port}`);
 
 Bun.serve({
