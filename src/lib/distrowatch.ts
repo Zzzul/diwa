@@ -584,6 +584,398 @@ export async function fetchAndStore(dataspan = '26'): Promise<Ranking[]> {
   return items
 }
 
+export type Headline = {
+  id: string
+  story_id: number
+  title: string
+  url: string
+  position: number
+  scraped_at: string
+}
+
+export function parseHeadlinesHtml(html: string): Headline[] {
+  const now = new Date().toISOString()
+  const items: Headline[] = []
+  const section = html.match(/Latest Headlines<\/td>\s*<\/tr>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<tr>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a><\/td>\s*<\/tr>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const href = m[1]
+    const title = m[2].trim()
+    const storyMatch = href.match(/story=(\d+)/)
+    const storyId = storyMatch ? Number(storyMatch[1]) : 0
+    const url = href.startsWith('http') ? href : `https://distrowatch.com/${href.replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      story_id: storyId,
+      title,
+      url,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeHeadlines(): Promise<Headline[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseHeadlinesHtml(html)
+}
+
+export function insertHeadlines(items: Headline[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO headlines (id, story_id, title, url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Headline[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.story_id, r.title, r.url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type Package = {
+  id: string
+  date: string
+  name: string
+  description: string | null
+  package_url: string
+  version: string
+  download_url: string
+  position: number
+  scraped_at: string
+}
+
+export function parsePackagesHtml(html: string): Package[] {
+  const now = new Date().toISOString()
+  const items: Package[] = []
+  const section = html.match(/Latest Packages<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a title="([^"]*)" href="([^"]+)">([^<]+)<\/a>\s*•\s*<a href="([^"]+)">([^<]+)<\/a><\/td>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const pkgUrl = m[3].startsWith('http') ? m[3] : `https://distrowatch.com/${m[3].replace(/^\//, '')}`
+    const dlUrl = m[5].startsWith('http') ? m[5] : `https://distrowatch.com/${m[5].replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      name: m[4].trim(),
+      description: m[2].trim() || null,
+      package_url: pkgUrl,
+      version: m[6].trim(),
+      download_url: dlUrl,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapePackages(): Promise<Package[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parsePackagesHtml(html)
+}
+
+export function insertPackages(items: Package[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO packages (id, date, name, description, package_url, version, download_url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Package[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.name, r.description, r.package_url, r.version, r.download_url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type Review = {
+  id: string
+  date: string
+  title: string
+  url: string
+  position: number
+  scraped_at: string
+}
+
+export function parseReviewsHtml(html: string): Review[] {
+  const now = new Date().toISOString()
+  const items: Review[] = []
+  const section = html.match(/Latest Reviews<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a><\/td>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const href = m[2]
+    const url = href.startsWith('http') ? href : `https://distrowatch.com/${href.replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      title: m[3].trim(),
+      url,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeReviews(): Promise<Review[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseReviewsHtml(html)
+}
+
+export function insertReviews(items: Review[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO reviews (id, date, title, url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Review[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.title, r.url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type Newsletter = {
+  id: string
+  date: string
+  title: string
+  url: string
+  position: number
+  scraped_at: string
+}
+
+export function parseNewslettersHtml(html: string): Newsletter[] {
+  const now = new Date().toISOString()
+  const items: Newsletter[] = []
+  const section = html.match(/Latest Newsletters<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a><\/td>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const href = m[2]
+    const url = href.startsWith('http') ? href : `https://distrowatch.com/${href.replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      title: m[3].trim(),
+      url,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeNewsletters(): Promise<Newsletter[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseNewslettersHtml(html)
+}
+
+export function insertNewsletters(items: Newsletter[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO newsletters (id, date, title, url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Newsletter[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.title, r.url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type Podcast = {
+  id: string
+  date: string
+  title: string
+  url: string
+  episode: string | null
+  episode_url: string | null
+  mp3_url: string | null
+  position: number
+  scraped_at: string
+}
+
+export function parsePodcastsHtml(html: string): Podcast[] {
+  const now = new Date().toISOString()
+  const items: Podcast[] = []
+  const section = html.match(/Latest Podcasts<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a>\s*-\s*<a href="([^"]+)">([^<]+)<\/a>\s*\(\s*<a href="([^"]+)">[^<]+<\/a>\s*\)/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const url = m[2].startsWith('http') ? m[2] : `https://distrowatch.com/${m[2].replace(/^\//, '')}`
+    const epUrl = m[4].startsWith('http') ? m[4] : `https://distrowatch.com/${m[4].replace(/^\//, '')}`
+    const mp3Url = m[6].startsWith('http') ? m[6] : `https://distrowatch.com/${m[6].replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      title: m[3].trim(),
+      url,
+      episode: m[5].trim(),
+      episode_url: epUrl,
+      mp3_url: mp3Url,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapePodcasts(): Promise<Podcast[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parsePodcastsHtml(html)
+}
+
+export function insertPodcasts(items: Podcast[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO podcasts (id, date, title, url, episode, episode_url, mp3_url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Podcast[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.title, r.url, r.episode, r.episode_url, r.mp3_url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type Addition = {
+  id: string
+  date: string
+  name: string
+  slug: string
+  position: number
+  scraped_at: string
+}
+
+export function parseAdditionsHtml(html: string): Addition[] {
+  const now = new Date().toISOString()
+  const items: Addition[] = []
+  const section = html.match(/Latest Additions<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a><\/td>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      name: m[3].trim(),
+      slug: m[2].trim(),
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeAdditions(): Promise<Addition[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseAdditionsHtml(html)
+}
+
+export function insertAdditions(items: Addition[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO additions (id, date, name, slug, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: Addition[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.name, r.slug, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
+export type WaitingListItem = {
+  id: string
+  date: string
+  name: string
+  url: string
+  position: number
+  scraped_at: string
+}
+
+export function parseWaitingListHtml(html: string): WaitingListItem[] {
+  const now = new Date().toISOString()
+  const items: WaitingListItem[] = []
+  const section = html.match(/New To Waiting List<\/th>([\s\S]*?)<\/tbody>/)
+  if (!section) return items
+  const rowRe = /<th class="News">([^<]+)<\/th>\s*<td class="News"><a href="([^"]+)">([^<]+)<\/a><\/td>/g
+  let m: RegExpExecArray | null
+  let position = 0
+  while ((m = rowRe.exec(section[1])) !== null) {
+    const href = m[2]
+    const url = href.startsWith('http') ? href : `https://distrowatch.com/${href.replace(/^\//, '')}`
+    items.push({
+      id: randomUUIDv7(),
+      date: `${now.slice(0, 4)}-${m[1].trim()}`,
+      name: m[3].trim(),
+      url,
+      position: ++position,
+      scraped_at: now,
+    })
+  }
+  return items
+}
+
+export async function scrapeWaitingList(): Promise<WaitingListItem[]> {
+  const browser = await puppeteer.connect({ browserWSEndpoint: BROWSER_WS })
+  const page = await browser.newPage()
+  await page.goto('https://distrowatch.com', { waitUntil: 'networkidle0' })
+  const html = await page.content()
+  await browser.disconnect()
+  return parseWaitingListHtml(html)
+}
+
+export function insertWaitingList(items: WaitingListItem[]): void {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO waiting_list (id, date, name, url, position, scraped_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  const tx = db.transaction((rows: WaitingListItem[]) => {
+    for (const r of rows) {
+      stmt.run(r.id, r.date, r.name, r.url, r.position, r.scraped_at)
+    }
+  })
+  tx(items)
+}
+
 export function getLatestRankings(limit: number, slug?: string): Ranking[] {
   const db = getDb()
   const rows = db.query<any[], [number]>(

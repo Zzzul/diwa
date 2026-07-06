@@ -20,7 +20,8 @@ app.get('/', async (c) => {
     if (!isDev()) insertDb(data)
     return c.json({ data: data.slice(0, limit), count: data.length })
   } catch (err) {
-    return c.json({ error: 'fetch failed', detail: String(err) }, 502)
+    const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
+    return c.json({ error: 'fetch failed', detail: msg }, 502)
   }
 })
 

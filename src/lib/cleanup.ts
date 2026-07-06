@@ -1,6 +1,6 @@
 import { getDb } from '../db/connection'
 
-const TABLES = ['rankings', 'news', 'random_distributions', 'latest_distributions']
+const TABLES = ['rankings', 'news', 'random_distributions', 'latest_distributions', 'headlines', 'packages', 'reviews', 'newsletters', 'podcasts', 'additions', 'waiting_list']
 
 export function cleanupOldData(): void {
   const db = getDb()
