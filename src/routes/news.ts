@@ -6,6 +6,15 @@ import { findNewsCache, insertNewsCache } from '../models/news-cache'
 import { isDev } from '../lib/parse'
 import { scrapeNews, insertNews, scrapeNewsDetail } from '../lib/distrowatch'
 
+const proxyImg = (url: string | null, origin: string) =>
+  url ? `${origin}/api/proxy/image?url=${encodeURIComponent(url)}` : null
+
+const rewriteImages = <T extends { logo?: string | null; screenshot?: string | null }>(d: T, origin: string): T => ({
+  ...d,
+  logo: proxyImg(d.logo ?? null, origin),
+  screenshot: proxyImg(d.screenshot ?? null, origin),
+})
+
 function enrich(item: News): News {
   if (item.type === 'weekly' && item.headline_slug) {
     return { ...item, headline_slug: item.headline_slug.replace('/api/news/', '/api/weekly/') }
@@ -24,6 +33,8 @@ function cacheKey(filters: Record<string, string | undefined>): string {
 const app = new Hono()
 
 app.get('/', async (c) => {
+  const origin = new URL(c.req.url).origin
+  const mapOut = (data: News[]) => data.map(d => rewriteImages(enrich(d), origin))
   const type = c.req.query('type') || undefined
   const date = c.req.query('date') || undefined
   const distribution = c.req.query('distribution') || undefined
@@ -37,11 +48,11 @@ app.get('/', async (c) => {
     const cached = findNewsCache(key)
     if (cached) {
       const parsed = JSON.parse(cached)
-      parsed.data = parsed.data.map(enrich)
+      parsed.data = mapOut(parsed.data)
       return c.json(parsed)
     }
-    const data = findLatest({ ...filters }).map(enrich)
-    if (data.length > 0) return c.json({ data, count: data.length })
+    const data = findLatest({ ...filters })
+    if (data.length > 0) return c.json({ data: mapOut(data), count: data.length })
   }
 
   try {
@@ -50,7 +61,7 @@ app.get('/', async (c) => {
       insertNews(data)
       insertNewsCache(key, JSON.stringify(filters), JSON.stringify({ data, count: data.length }))
     }
-    return c.json({ data: data.map(enrich), count: data.length })
+    return c.json({ data: mapOut(data), count: data.length })
   } catch (err) {
     const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
     return c.json({ error: 'fetch failed', detail: msg }, 502)
@@ -59,13 +70,14 @@ app.get('/', async (c) => {
 
 app.get('/:id', async (c) => {
   const id = c.req.param('id')
+  const origin = new URL(c.req.url).origin
   if (!id) return c.json({ error: 'invalid id' }, 400)
 
   if (!isDev() && /^\d+$/.test(id)) {
     const cached = findNewsDetail(id)
     if (cached) {
       if (cached.type === 'weekly') return c.json({ error: 'weekly news not supported' }, 400)
-      return c.json({ data: cached })
+      return c.json({ data: rewriteImages(cached, origin) })
     }
   }
 
@@ -74,7 +86,7 @@ app.get('/:id', async (c) => {
       const data = await scrapeNewsDetail(id)
       if (data.type === 'weekly') return c.json({ error: 'weekly news not supported' }, 400)
       if (!isDev()) insertNewsDetail(data)
-      return c.json({ data })
+      return c.json({ data: rewriteImages(data, origin) })
     } catch (err) {
       const msg = err instanceof ErrorEvent ? `puppeteer conn failed: ${err.message}` : String(err)
       return c.json({ error: 'fetch failed', detail: msg }, 502)
@@ -83,7 +95,7 @@ app.get('/:id', async (c) => {
 
   const row = findById(id)
   if (!row) return c.json({ error: 'not found' }, 404)
-  return c.json({ data: enrich(row) })
+  return c.json({ data: rewriteImages(enrich(row), origin) })
 })
 
 export default app

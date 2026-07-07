@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import rankings from "./routes/rankings";
 import news from "./routes/news";
 import distributions from "./routes/distributions";
@@ -6,6 +7,7 @@ import newsFilters from "./routes/news-filters";
 import weekly from "./routes/weekly";
 import search from "./routes/search";
 import latest from "./routes/latest";
+import proxy from "./routes/proxy";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
 import { rateLimiter } from "hono-rate-limiter";
@@ -18,6 +20,8 @@ if (cmd === "db:migrate") {
 }
 
 const app = new Hono();
+
+app.use(cors())
 
 app.use(rateLimiter({
   windowMs: 60_000,
@@ -34,6 +38,7 @@ app.route("/api/distributions", distributions);
 app.route("/api/weekly", weekly);
 app.route("/api/search", search);
 app.route("/api/latest", latest);
+app.route("/api/proxy", proxy);
 setupOpenApi(app);
 
 Bun.cron("0 * * * *", cleanupOldData)
