@@ -21,8 +21,9 @@ function isAllowed(url: string): boolean {
 
 export async function initCache(dir?: string): Promise<void> {
   cacheDir = resolve(dir || process.env.CACHE_DIR || './cache', 'images');
-  if (!existsSync(cacheDir)) {
-    mkdirSync(cacheDir, { recursive: true });
+  for (const sub of ['logo', 'screenshot']) {
+    const p = resolve(cacheDir, sub)
+    if (!existsSync(p)) mkdirSync(p, { recursive: true })
   }
 }
 
@@ -32,11 +33,12 @@ function filenameFromUrl(url: string): string {
   return parts[parts.length - 1] || 'unknown';
 }
 
-export async function serveImage(url: string | undefined, c: Context): Promise<Response> {
+export async function serveImage(url: string | undefined, type: string | undefined, c: Context): Promise<Response> {
   if (!url) return c.text('missing url', 400);
   if (!isAllowed(url)) return c.text('host not allowed', 403);
+  const sub = type === 'screenshot' ? 'screenshot' : 'logo'
   const name = filenameFromUrl(url);
-  const filePath = resolve(cacheDir, name);
+  const filePath = resolve(cacheDir, sub, name);
 
   if (existsSync(filePath)) {
     const buf = readFileSync(filePath);
@@ -67,14 +69,14 @@ export async function preCacheImages(items: NewsItem[]): Promise<void> {
     console.warn('preCacheImages: items is not an array, got', typeof items, items)
     return
   }
-  const urls: string[] = [];
+  const entries: { url: string; sub: string }[] = []
   for (const item of items) {
-    if (item.screenshot && isAllowed(item.screenshot)) urls.push(item.screenshot);
-    if (item.logo && isAllowed(item.logo)) urls.push(item.logo);
+    if (item.screenshot && isAllowed(item.screenshot)) entries.push({ url: item.screenshot, sub: 'screenshot' })
+    if (item.logo && isAllowed(item.logo)) entries.push({ url: item.logo, sub: 'logo' })
   }
-  for (const url of urls) {
+  for (const { url, sub } of entries) {
     const name = filenameFromUrl(url);
-    const filePath = resolve(cacheDir, name);
+    const filePath = resolve(cacheDir, sub, name);
     if (existsSync(filePath)) continue;
     try {
       const res = await fetch(url, {
@@ -83,7 +85,7 @@ export async function preCacheImages(items: NewsItem[]): Promise<void> {
       if (res.ok) {
         const buf = await res.arrayBuffer();
         writeFileSync(filePath, Buffer.from(buf));
-        console.log(`  cached image: ${name}`);
+        console.log(`  cached image: ${name} (${sub})`);
       }
     } catch {
       // skip — will be cached on first proxy request
@@ -91,6 +93,6 @@ export async function preCacheImages(items: NewsItem[]): Promise<void> {
   }
 }
 
-app.get('/image', async (c) => serveImage(c.req.query('url'), c))
+app.get('/image', async (c) => serveImage(c.req.query('url'), c.req.query('type'), c))
 
 export default app

@@ -6,13 +6,13 @@ import { findNewsCache, insertNewsCache } from '../models/news-cache'
 import { isDev } from '../lib/parse'
 import { scrapeNews, insertNews, scrapeNewsDetail } from '../lib/distrowatch'
 
-const proxyImg = (url: string | null, origin: string) =>
-  url ? `${origin}/api/proxy/image?url=${encodeURIComponent(url)}` : null
+const proxyImg = (url: string | null, type: 'logo' | 'screenshot', origin: string) =>
+  url ? `${origin}/api/proxy/image?url=${encodeURIComponent(url)}&type=${type}` : null
 
 const rewriteImages = <T extends { logo?: string | null; screenshot?: string | null }>(d: T, origin: string): T => ({
   ...d,
-  logo: proxyImg(d.logo ?? null, origin),
-  screenshot: proxyImg(d.screenshot ?? null, origin),
+  logo: proxyImg(d.logo ?? null, 'logo', origin),
+  screenshot: proxyImg(d.screenshot ?? null, 'screenshot', origin),
 })
 
 function enrich(item: News): News {
