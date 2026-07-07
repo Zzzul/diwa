@@ -44,8 +44,6 @@ const ex = {
         scraped_at: "2026-07-06T12:00:00.000Z",
     },
     newsFilter: {
-        // ... unchanged
-    },
         data: {
             distribution: [{ value: "mint", label: "Linux Mint" }],
             release: [{ value: "stable", label: "Stable" }],
