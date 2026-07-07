@@ -7,7 +7,7 @@ import newsFilters from "./routes/news-filters";
 import weekly from "./routes/weekly";
 import search from "./routes/search";
 import latest from "./routes/latest";
-import proxy from "./routes/proxy";
+import proxy, { initCache } from "./routes/proxy";
 import { setupOpenApi } from "./lib/openapi";
 import { cleanupOldData } from "./lib/cleanup";
 import { rateLimiter } from "hono-rate-limiter";
@@ -58,6 +58,8 @@ console.log(`[config] HOST=${host}`);
 console.log(`[config] API_BASE_URL=${process.env.API_BASE_URL || "not set"}`);
 console.log(`[config] BROWSER_WS=${process.env.BROWSER_WS ? "set" : "not set"}`);
 console.log(`Started server: http://${host}:${port}`);
+
+await initCache();
 
 Bun.serve({
     fetch: app.fetch,
