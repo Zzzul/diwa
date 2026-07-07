@@ -6,7 +6,18 @@ import type { NewsItem } from '../db/types.js';
 
 const app = new Hono()
 
+const ALLOWED_HOSTS = ['distrowatch.com', 'dw.com']
+
 let cacheDir: string;
+
+function isAllowed(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return ALLOWED_HOSTS.some(h => parsed.hostname.endsWith(h))
+  } catch {
+    return false
+  }
+}
 
 export async function initCache(dir?: string): Promise<void> {
   cacheDir = resolve(dir || process.env.CACHE_DIR || './cache', 'images');
@@ -23,6 +34,7 @@ function filenameFromUrl(url: string): string {
 
 export async function serveImage(url: string | undefined, c: Context): Promise<Response> {
   if (!url) return c.text('missing url', 400);
+  if (!isAllowed(url)) return c.text('host not allowed', 403);
   const name = filenameFromUrl(url);
   const filePath = resolve(cacheDir, name);
 
@@ -57,8 +69,8 @@ export async function preCacheImages(items: NewsItem[]): Promise<void> {
   }
   const urls: string[] = [];
   for (const item of items) {
-    if (item.screenshot) urls.push(item.screenshot);
-    if (item.logo) urls.push(item.logo);
+    if (item.screenshot && isAllowed(item.screenshot)) urls.push(item.screenshot);
+    if (item.logo && isAllowed(item.logo)) urls.push(item.logo);
   }
   for (const url of urls) {
     const name = filenameFromUrl(url);
