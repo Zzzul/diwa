@@ -9,7 +9,7 @@ export function findAll(): DistroItem[] {
 export function insertMany(items: DistroItem[]): void {
   const db = getDb()
   db.exec('DELETE FROM distributions_list')
-  const stmt = db.prepare('INSERT INTO distributions_list (id, slug, name, scraped_at) VALUES (?, ?, ?, ?)')
+  const stmt = db.prepare('INSERT OR IGNORE INTO distributions_list (id, slug, name, scraped_at) VALUES (?, ?, ?, ?)')
   const now = new Date().toISOString()
   const tx = db.transaction((rows: DistroItem[]) => {
     for (const r of rows) {
